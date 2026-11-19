@@ -2,7 +2,8 @@
 
 ## 本次版本内容
 
-v2.1.0 完成增量同步、新文章本地通知、系统分享入口、App Links 和阅读页黑白长图分享卡片。
+- **v2.1.1**（versionCode 5）：产品化第一批改造——阅读进度记忆与继续阅读、备份与恢复、首次启动引导、隐私政策页、应用内更新检查、通知权限上下文申请、反馈入口、深色模式与无障碍修复。云端模拟器实测启动通过。
+- v2.1.0：增量同步、新文章本地通知、系统分享入口、App Links、阅读页黑白长图分享卡片。
 完整变更见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 构建方式
@@ -12,11 +13,12 @@ CI：`.github/workflows/build.yml`，push main 或 tag `v*` 后构建 release AP
 
 已使用 tag `v2.1.0` 触发 GitHub Actions 云构建并成功产出正式签名 APK：
 
-- 最新构建运行（含启动崩溃修复）：tag `v2.1.0` 指向 commit `3f4b661`，构建成功并已更新 Release 产物。
-- GitHub Release：https://github.com/TPGoFighting/collect-native-app/releases/tag/v2.1.0
-- 产物：`collect-v2.1.0.apk`（22,957,926 字节，SHA-256 `c7a5ac58da3fd1af6c96e5affe3394be0df5ab3ce08434b20a1f99bf0dbcf768`）
-- APK 校验：包名 `top.tpgofighting.collect`、versionCode 4、versionName 2.1.0、签名校验通过。
-- 云端真机验证：GitHub Actions Android 模拟器（API 35）实测安装、启动、JS 运行全部通过，logcat 无 FATAL；早期构建因 R8 移除 WorkManager `WorkDatabase_Impl` 构造函数导致启动闪退，已通过 `plugins/withWorkManagerKeepRules.js` 修复。
+- 最新构建：tag `v2.1.1`（commit `0fbfb32`），构建成功并已发布 Release。
+- GitHub Release：https://github.com/TPGoFighting/collect-native-app/releases/tag/v2.1.1
+- 产物：`collect-v2.1.1.apk`（23,008,166 字节，SHA-256 `f754638944b6ccab1a7871afc0ed8175c7ed10372b0709c8f087bc53ebb52c99`）
+- APK 校验：包名 `top.tpgofighting.collect`、versionCode 5、versionName 2.1.1、签名校验通过。
+- 云端真机验证：GitHub Actions Android 模拟器（API 35）实测安装、启动、JS 运行全部通过，logcat 0 次 FATAL。
+- 网站下载按钮已指向 `https://collect.tpgofighting.top/downloads/collect-v2.1.1.apk`，公网哈希与 Release 一致。
 
 本地构建不是发布前置条件；若本机具备 JDK 与 Android SDK，可运行：
 
