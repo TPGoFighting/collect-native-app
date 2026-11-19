@@ -56,6 +56,15 @@ GitHub Actions 云构建（run 44523810077）：
 | `https://collect.tpgofighting.top/article/does-not-exist` | HTTP 200 / `text/html`，不存在的文章由 App 显示错误状态 |
 | `https://collect.tpgofighting.top/data/articles.json` | HTTP 200 / `application/json`，42 篇与种子一致 |
 
+## 启动崩溃诊断与修复（云端真机验证）
+
+- 症状：手机安装 v2.1.0 后打开即闪退。
+- 诊断：新增 `.github/workflows/diagnose-android.yml`（GitHub Actions 云端 Android 模拟器 + logcat 抓取）。logcat 显示启动阶段（JS 未运行）即崩溃：
+  `Unable to get provider androidx.startup.InitializationProvider: java.lang.NoSuchMethodException: androidx.work.impl.WorkDatabase_Impl.<init> []`
+- 根因：`expo-background-task` 依赖 AndroidX WorkManager；其启动初始化器通过反射构造 Room 生成的 `WorkDatabase_Impl`，R8 minify 移除了该构造函数。
+- 修复：`plugins/withWorkManagerKeepRules.js` 在 release 构建注入 ProGuard keep 规则；回归测试 `npm run test:release-crash` 已接入 CI。
+- 云端复验（run 44558542838，API 35 模拟器）：`adb install` Success、`MainActivity` Displayed、`ReactNativeJS: Running "main"`、全程 0 次 FATAL EXCEPTION。
+
 ## 仍受限的验证
 
 - 没有 Android 设备或模拟器，以下行为只完成了静态配置、云构建、单元测试和 Manifest 检查，尚未做真机验证：

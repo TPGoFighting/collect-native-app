@@ -12,10 +12,11 @@ CI：`.github/workflows/build.yml`，push main 或 tag `v*` 后构建 release AP
 
 已使用 tag `v2.1.0` 触发 GitHub Actions 云构建并成功产出正式签名 APK：
 
-- 构建运行：https://github.com/TPGoFighting/collect-native-app/actions/runs/44523810077
+- 最新构建运行（含启动崩溃修复）：tag `v2.1.0` 指向 commit `3f4b661`，构建成功并已更新 Release 产物。
 - GitHub Release：https://github.com/TPGoFighting/collect-native-app/releases/tag/v2.1.0
-- 产物：`collect-v2.1.0.apk`（22,833,521 字节）
+- 产物：`collect-v2.1.0.apk`（22,957,926 字节，SHA-256 `c7a5ac58da3fd1af6c96e5affe3394be0df5ab3ce08434b20a1f99bf0dbcf768`）
 - APK 校验：包名 `top.tpgofighting.collect`、versionCode 4、versionName 2.1.0、签名校验通过。
+- 云端真机验证：GitHub Actions Android 模拟器（API 35）实测安装、启动、JS 运行全部通过，logcat 无 FATAL；早期构建因 R8 移除 WorkManager `WorkDatabase_Impl` 构造函数导致启动闪退，已通过 `plugins/withWorkManagerKeepRules.js` 修复。
 
 本地构建不是发布前置条件；若本机具备 JDK 与 Android SDK，可运行：
 
