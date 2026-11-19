@@ -46,7 +46,8 @@ jobs:
           profile: pixel_6
           avd-name: collect-diagnose
           force-avd-creation: true
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -boot-timeout 300000
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio
+          emulator-boot-timeout: 900
           disable-animations: true
           script: |
             set +e
