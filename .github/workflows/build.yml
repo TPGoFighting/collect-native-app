@@ -67,12 +67,18 @@ jobs:
           allprojects {
             afterEvaluate {
               tasks.findByName("generateInlineModules")?.with {
-                println("WD-TASK project=" + project.path + " watchedDirectoriesSerialized=[" + watchedDirectoriesSerialized.get() + "]")
+                doFirst {
+                  println("WD-CMD project=" + project.path)
+                  println("WD-CMD watched=[" + watchedDirectoriesSerialized.get() + "]")
+                  println("WD-CMD mirror=" + mirrorDirectory.get().asFile.absolutePath)
+                  println("WD-CMD output=" + outputDirectory.get().asFile.absolutePath)
+                  println("WD-CMD nodeDir=" + nodeWorkingDir.get().asFile.absolutePath)
+                }
               }
             }
           }
           EOF
-          (cd android && ./gradlew -I /tmp/wd-debug.gradle help 2>&1 | grep -E "WD-TASK|BUILD" | head -10)
+          (cd android && ./gradlew -I /tmp/wd-debug.gradle :expo:generateInlineModules 2>&1 | grep -E "WD-CMD|expo-modules-autolinking failed|FAILED|BUILD" | head -15 || true)
 
       - name: Write gradle.properties (signing)
         env:
