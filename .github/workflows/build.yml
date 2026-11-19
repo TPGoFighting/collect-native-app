@@ -60,13 +60,6 @@ jobs:
       - name: Expo prebuild (Android)
         run: npx expo prebuild --platform android --non-interactive
 
-      - name: TEMP DEBUG manual node command
-        run: |
-          cd android
-          node --version
-          node --no-warnings --eval "require('expo/bin/autolinking')" expo-modules-autolinking mirror-kotlin-inline-modules --kotlin-files-mirror-directory "$GITHUB_WORKSPACE/node_modules/expo/android/src/main/java/inline/modules" --inline-modules-list-directory "$GITHUB_WORKSPACE/node_modules/expo/android/build/inline/modules" --watched-directories-serialized '[]'
-          echo "MANUAL EXIT: $?"
-
       - name: Write gradle.properties (signing)
         env:
           STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -79,10 +72,20 @@ jobs:
           COLLECT_KEY_PASSWORD=$KEY_PASSWORD
           EOF
 
+      - name: TEMP DEBUG gradle.properties bytes (post-append)
+        run: |
+          sed -n '78p' android/gradle.properties | od -c | head -3
+          node -e "
+          const fs=require('fs');
+          const l=fs.readFileSync('android/gradle.properties','utf8').split('\n').find(x=>x.startsWith('expo.inlineModules.watchedDirectories='));
+          console.log('line repr:', JSON.stringify(l));
+          console.log('value len:', l.split('=')[1].length, 'codes:', [...l.split('=')[1]].map(c=>c.codePointAt(0)).join(','));
+          "
+
       - name: Build release APK
         run: |
           cd android
-          ./gradlew :app:assembleRelease --no-daemon
+          ./gradlew :app:assembleRelease --no-daemon -Pexpo.inlineModules.watchedDirectories='[]'
 
       - name: Verify APK
         run: |
