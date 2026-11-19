@@ -11,6 +11,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # The release step needs to create GitHub Releases; the repo's default
+    # GITHUB_TOKEN permissions are read-only for contents, so declare it.
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
