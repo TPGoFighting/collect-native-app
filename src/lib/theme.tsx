@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { useColorScheme } from 'react-native';
+import { PixelRatio, useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FONT_SIZES, LINE_HEIGHTS, ReaderSettings } from './types';
+import { FONT_SIZES, LINE_HEIGHTS, ReaderSettings, scaledFontSize } from './types';
 
 // Black & white zinc tokens (design doc 6.1). No color accent anywhere.
 export interface Theme {
@@ -60,13 +60,14 @@ const Ctx = createContext<SettingsCtx>({
   setSettings: () => {},
   theme: tokens.light,
   isDark: false,
-  fontSize: FONT_SIZES[2],
+  fontSize: scaledFontSize(FONT_SIZES[2], 1),
   lineHeight: LINE_HEIGHTS[1],
   loaded: false,
 });
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const systemScheme = useColorScheme();
+  const fontScale = PixelRatio.getFontScale();
   const [settings, setSettingsState] = useState<ReaderSettings>(DEFAULT_SETTINGS);
   const [loaded, setLoaded] = useState(false);
 
@@ -100,11 +101,14 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setSettings,
       theme: isDark ? tokens.dark : tokens.light,
       isDark,
-      fontSize: FONT_SIZES[Math.min(Math.max(settings.fontSize, 0), FONT_SIZES.length - 1)],
+      fontSize: scaledFontSize(
+        FONT_SIZES[Math.min(Math.max(settings.fontSize, 0), FONT_SIZES.length - 1)],
+        fontScale,
+      ),
       lineHeight: LINE_HEIGHTS[Math.min(Math.max(settings.lineHeight, 0), LINE_HEIGHTS.length - 1)],
       loaded,
     }),
-    [settings, isDark, loaded],
+    [settings, isDark, loaded, fontScale],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

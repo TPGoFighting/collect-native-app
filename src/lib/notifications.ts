@@ -49,6 +49,41 @@ export async function requestNotificationPermission(): Promise<boolean> {
   return status === 'granted';
 }
 
+// ---------- in-article permission nudge (shown once, after the 3rd finished article) ----------
+export const NUDGE_AFTER_ARTICLES = 3;
+export const NUDGE_COUNT_KEY = 'nudge_articles_read';
+export const NUDGE_SHOWN_KEY = 'nudge_shown';
+
+/** Returns true when the nudge should be shown for this article finish. */
+export function shouldShowNudge(readCount: number, shown: boolean, granted: boolean): boolean {
+  return !shown && !granted && readCount >= NUDGE_AFTER_ARTICLES;
+}
+
+/**
+ * Call when the user finishes reading an article. Counts finished articles
+ * (deduped per article) in the meta table and reports whether the in-article
+ * nudge should appear now — exactly once, never for already-granted users.
+ */
+export function recordArticleFinishedForNudge(id: string, granted: boolean): boolean {
+  if (getMeta(`nudge_counted:${id}`) === '1') {
+    // Re-read: keep prior state so the banner can persist across the session.
+    return getMeta(NUDGE_SHOWN_KEY) !== '1' && !granted && Number(getMeta(NUDGE_COUNT_KEY) ?? '0') >= NUDGE_AFTER_ARTICLES;
+  }
+  setMeta(`nudge_counted:${id}`, '1');
+  const prev = Number(getMeta(NUDGE_COUNT_KEY) ?? '0');
+  setMeta(NUDGE_COUNT_KEY, String(prev + 1));
+  const count = prev + 1;
+  if (shouldShowNudge(count, getMeta(NUDGE_SHOWN_KEY) === '1', granted)) {
+    return true;
+  }
+  return false;
+}
+
+/** Mark the nudge as consumed so it never appears again. */
+export function markNudgeShown(): void {
+  setMeta(NUDGE_SHOWN_KEY, '1');
+}
+
 /** Notify once per article when the preference and OS permission allow it. */
 export async function notifyNewArticle(id: string, title: string): Promise<boolean> {
   if (getNotificationPref() === 'off') return false;

@@ -1,8 +1,8 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { PixelRatio, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, Moon, Sun } from 'lucide-react-native';
-import { FONT_SIZES, LINE_HEIGHTS } from '@/lib/types';
+import { FONT_SIZES, LINE_HEIGHTS, scaledFontSize } from '@/lib/types';
 import { useSettings } from '@/lib/theme';
 
 export default function SettingsScreen() {
@@ -12,7 +12,7 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.bg }]} edges={['top']}>
       <View style={[styles.header, { borderColor: theme.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityLabel="返回">
+        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="返回">
           <ArrowLeft size={22} color={theme.text} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: theme.text }]}>阅读设置</Text>
@@ -99,8 +99,10 @@ export default function SettingsScreen() {
             style={{
               color: theme.text,
               fontFamily: 'serif',
-              fontSize: FONT_SIZES[settings.fontSize],
-              lineHeight: Math.round(FONT_SIZES[settings.fontSize] * LINE_HEIGHTS[settings.lineHeight]),
+              fontSize: scaledFontSize(FONT_SIZES[settings.fontSize], PixelRatio.getFontScale()),
+              lineHeight: Math.round(
+                scaledFontSize(FONT_SIZES[settings.fontSize], PixelRatio.getFontScale()) * LINE_HEIGHTS[settings.lineHeight],
+              ),
             }}
           >
             所有代码都是垃圾代码，除了我的。预览一下这段文字在当前字号与行距下的样子。

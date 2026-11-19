@@ -49,7 +49,7 @@ export default function SearchScreen() {
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.bg }]} edges={['top']}>
       <View style={[styles.searchRow, { borderColor: theme.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityLabel="返回">
+        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="返回">
           <ArrowLeft size={22} color={theme.text} />
         </Pressable>
         <TextInput
@@ -64,7 +64,7 @@ export default function SearchScreen() {
           clearButtonMode="never"
         />
         {query ? (
-          <Pressable onPress={() => setQuery('')} hitSlop={10} style={styles.iconBtn} accessibilityLabel="清除">
+          <Pressable onPress={() => setQuery('')} hitSlop={10} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="清除">
             <X size={18} color={theme.textSecondary} />
           </Pressable>
         ) : (

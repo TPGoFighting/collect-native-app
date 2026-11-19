@@ -66,7 +66,7 @@ export default function RecommendScreen() {
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.bg }]} edges={['top']}>
       <View style={[styles.header, { borderColor: theme.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityLabel="返回">
+        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="返回">
           <ArrowLeft size={22} color={theme.text} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: theme.text }]}>推荐文章</Text>
@@ -122,7 +122,7 @@ export default function RecommendScreen() {
                 </Text>
               ) : null}
             </View>
-            <Pressable onPress={() => copyOne(item)} hitSlop={8} style={styles.itemBtn} accessibilityLabel="复制">
+            <Pressable onPress={() => copyOne(item)} hitSlop={8} style={styles.itemBtn} accessibilityRole="button" accessibilityLabel="复制">
               <Copy size={18} color={theme.textSecondary} />
             </Pressable>
             <Pressable
@@ -132,6 +132,7 @@ export default function RecommendScreen() {
               }}
               hitSlop={8}
               style={styles.itemBtn}
+              accessibilityRole="button"
               accessibilityLabel="删除"
             >
               <Trash2 size={18} color={theme.textSecondary} />

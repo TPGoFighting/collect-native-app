@@ -83,7 +83,7 @@ export default function ShareCardScreen() {
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.bg }]} edges={['top']}>
       <View style={[styles.header, { borderColor: theme.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityLabel="返回">
+        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="返回">
           <ArrowLeft size={22} color={theme.text} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: theme.text }]}>分享卡片</Text>
@@ -97,7 +97,7 @@ export default function ShareCardScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {uri ? (
           <Pressable onPress={() => setPreviewOpen(true)} style={styles.previewBtn}>
-            <Image source={{ uri }} style={styles.thumbnail} contentFit="contain" cachePolicy="memory" />
+            <Image source={{ uri }} style={[styles.thumbnail, { backgroundColor: theme.border }]} contentFit="contain" cachePolicy="memory" />
             <Text style={[styles.hint, { color: theme.textSecondary }]}>点击查看大图</Text>
           </Pressable>
         ) : (
@@ -127,7 +127,7 @@ export default function ShareCardScreen() {
         <View style={styles.previewOverlay}>
           <Pressable style={styles.previewDismiss} onPress={() => setPreviewOpen(false)} />
           {uri ? <Image source={{ uri }} style={styles.previewImage} contentFit="contain" cachePolicy="memory" /> : null}
-          <Pressable onPress={() => setPreviewOpen(false)} style={styles.previewClose} accessibilityLabel="关闭预览">
+          <Pressable onPress={() => setPreviewOpen(false)} style={styles.previewClose} accessibilityRole="button" accessibilityLabel="关闭预览">
             <Text style={{ color: '#FFFFFF', fontSize: 28 }}>×</Text>
           </Pressable>
         </View>
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   offscreen: { position: 'absolute', left: -10000, top: 0, opacity: 1 },
   content: { flexGrow: 1, alignItems: 'center', padding: 20 },
   previewBtn: { alignItems: 'center', gap: 10 },
-  thumbnail: { width: 220, height: 420, borderRadius: 8, backgroundColor: '#F4F4F5' },
+  thumbnail: { width: 220, height: 420, borderRadius: 8 },
   loading: { alignItems: 'center', gap: 12, paddingVertical: 80 },
   hint: { fontSize: 12 },
   error: { fontSize: 12, marginTop: 12, textAlign: 'center' },

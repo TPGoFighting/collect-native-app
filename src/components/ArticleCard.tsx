@@ -29,7 +29,7 @@ export function ArticleCard({
     >
       <Image
         source={{ uri: coverUrl(article) }}
-        style={styles.cover}
+        style={[styles.cover, { backgroundColor: theme.border }]}
         contentFit="cover"
         transition={150}
         cachePolicy="disk"
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 12,
   },
-  cover: { width: '100%', aspectRatio: 1200 / 615, backgroundColor: '#E4E4E7' },
+  cover: { width: '100%', aspectRatio: 1200 / 615 },
   body: { padding: 14 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
   badge: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },

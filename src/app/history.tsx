@@ -43,11 +43,11 @@ export default function HistoryScreen() {
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.bg }]} edges={['top']}>
       <View style={[styles.header, { borderColor: theme.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityLabel="返回">
+        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="返回">
           <ArrowLeft size={22} color={theme.text} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: theme.text }]}>阅读历史</Text>
-        <Pressable onPress={onClear} hitSlop={10} style={styles.iconBtn} accessibilityLabel="清除历史">
+        <Pressable onPress={onClear} hitSlop={10} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="清除历史">
           <Trash2 size={20} color={theme.textSecondary} />
         </Pressable>
       </View>

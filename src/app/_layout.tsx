@@ -14,6 +14,7 @@ import { registerBackgroundSync } from '@/lib/backgroundSync';
 import { configureNotificationChannel, notificationNavigation } from '@/lib/notifications';
 import { classifyIncomingUrl } from '@/lib/links';
 import { dispatchIncoming, setIncomingListener, type IncomingNavigation } from '@/lib/incoming';
+import { checkForUpdate } from '@/lib/updateCheck';
 import { ONBOARDING_KEY } from './onboarding';
 
 SplashScreen.preventAutoHideAsync();
@@ -51,6 +52,8 @@ function RootLayoutContent() {
         registerBackgroundSync().catch(() => {});
         // Foreground sync: never blocks the first paint. Offline works from seed.
         syncNow().catch(() => {});
+        // Silent update check, throttled to once per 24h inside checkForUpdate.
+        checkForUpdate().catch(() => {});
         // First-launch onboarding. Returning users (any saved settings) skip it.
         const [flag, settingsRaw] = await Promise.all([
           AsyncStorage.getItem(ONBOARDING_KEY),

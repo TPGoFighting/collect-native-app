@@ -64,6 +64,13 @@ export const DATA_URL = `${BASE_URL}/data/articles.json`;
 
 export const FONT_SIZES = [15, 16, 17, 18, 20];
 export const LINE_HEIGHTS = [1.6, 1.75];
+// System font scaling: clamp so the five reader sizes keep their relative steps.
+export const MAX_FONT_SCALE = 1.3;
+
+/** Scale a reader font size by the OS font scale, capped at MAX_FONT_SCALE. */
+export function scaledFontSize(size: number, fontScale: number): number {
+  return Math.round(size * Math.min(fontScale, MAX_FONT_SCALE));
+}
 export type ThemeMode = 'system' | 'light' | 'dark';
 
 export interface ReaderSettings {

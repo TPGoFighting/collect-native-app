@@ -15,12 +15,20 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
 import * as Haptics from 'expo-haptics';
-import { ArrowLeft, Bookmark, Image as ImageIcon, List, Moon, Share2, Sun, Type } from 'lucide-react-native';
+import { ArrowLeft, Bookmark, Image as ImageIcon, List, Moon, Share2, Sun, Type, X } from 'lucide-react-native';
 import type { Article, Section } from '@/lib/types';
 import { FONT_SIZES, LINE_HEIGHTS } from '@/lib/types';
 import { useSettings } from '@/lib/theme';
 import { clearProgress, getArticle, getArticleMeta, getProgress, isFavorite, markRead, setProgress, toggleFavorite } from '@/lib/db';
 import { fetchArticleFull } from '@/lib/sync';
+import {
+  configureNotificationChannel,
+  getNotificationPermission,
+  markNudgeShown,
+  recordArticleFinishedForNudge,
+  requestNotificationPermission,
+} from '@/lib/notifications';
+import { registerBackgroundSync } from '@/lib/backgroundSync';
 import { ArticleCard, coverUrl } from '@/components/ArticleCard';
 import { ImageViewer } from '@/components/ImageViewer';
 import { SectionView, type ViewerImage } from '@/components/SectionView';
@@ -45,6 +53,7 @@ export default function ArticleScreen() {
   const [tocOpen, setTocOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(-1);
+  const [nudgeVisible, setNudgeVisible] = useState(false);
   const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const headingY = useRef(new Map<number, number>());
   const restored = useRef(false);
@@ -70,6 +79,12 @@ export default function ArticleScreen() {
         markRead(id);
         setFullFailed(a.sections.length === 0);
         pendingRestore.current = getProgress(id);
+        // One-time notification nudge: context-timed after the 3rd finished article.
+        getNotificationPermission()
+          .then((granted) => {
+            if (recordArticleFinishedForNudge(id, granted)) setNudgeVisible(true);
+          })
+          .catch(() => {});
       }
       setLoading(false);
     })();
@@ -186,6 +201,25 @@ export default function ArticleScreen() {
     router.push({ pathname: '/article/share-card', params: { id: article.id } });
   };
 
+  const onNudgeEnable = async () => {
+    setNudgeVisible(false);
+    markNudgeShown();
+    try {
+      const granted = await requestNotificationPermission();
+      if (granted) {
+        await configureNotificationChannel();
+        await registerBackgroundSync();
+      }
+    } catch {
+      // permission request failed; stay silent
+    }
+  };
+
+  const onNudgeDismiss = () => {
+    setNudgeVisible(false);
+    markNudgeShown();
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={[styles.center, { backgroundColor: theme.bg }]}>
@@ -198,7 +232,7 @@ export default function ArticleScreen() {
     return (
       <SafeAreaView style={[styles.root, { backgroundColor: theme.bg }]} edges={['top']}>
         <View style={[styles.header, { borderColor: theme.border }]}>
-          <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityLabel="返回">
+          <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="返回">
             <ArrowLeft size={22} color={theme.text} />
           </Pressable>
           <View style={styles.iconBtn} />
@@ -220,25 +254,25 @@ export default function ArticleScreen() {
     <SafeAreaView style={[styles.root, { backgroundColor: theme.bg }]} edges={['top']}>
       {/* header */}
       <View style={[styles.header, { borderColor: theme.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityLabel="返回">
+        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="返回">
           <ArrowLeft size={22} color={theme.text} />
         </Pressable>
         <View style={styles.headerActions}>
           {headings.length > 0 ? (
-            <Pressable onPress={() => setTocOpen(true)} hitSlop={10} style={styles.iconBtn} accessibilityLabel="目录">
+            <Pressable onPress={() => setTocOpen(true)} hitSlop={10} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="目录">
               <List size={22} color={theme.text} />
             </Pressable>
           ) : null}
-          <Pressable onPress={() => setSettingsOpen(true)} hitSlop={10} style={styles.iconBtn} accessibilityLabel="阅读设置">
+          <Pressable onPress={() => setSettingsOpen(true)} hitSlop={10} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="阅读设置">
             <Type size={22} color={theme.text} />
           </Pressable>
-          <Pressable onPress={onToggleFav} hitSlop={10} style={styles.iconBtn} accessibilityLabel="收藏">
+          <Pressable onPress={onToggleFav} hitSlop={10} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel={fav ? '已收藏' : '未收藏'}>
             <Bookmark size={22} color={theme.text} fill={fav ? theme.text : 'transparent'} />
           </Pressable>
-          <PressScale onPress={openShareCard} hitSlop={10} style={styles.iconBtn} accessibilityLabel="生成分享长图">
+          <PressScale onPress={openShareCard} hitSlop={10} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="生成分享长图">
             <ImageIcon size={22} color={theme.text} />
           </PressScale>
-          <PressScale onPress={onShare} hitSlop={10} style={styles.iconBtn} accessibilityLabel="分享">
+          <PressScale onPress={onShare} hitSlop={10} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="分享">
             <Share2 size={22} color={theme.text} />
           </PressScale>
         </View>
@@ -265,7 +299,7 @@ export default function ArticleScreen() {
         <Pressable onPress={() => setViewerIndex(0)}>
           <Image
             source={{ uri: coverUrl(article) }}
-            style={styles.cover}
+            style={[styles.cover, { backgroundColor: theme.border }]}
             contentFit="cover"
             transition={150}
             cachePolicy="disk"
@@ -336,6 +370,26 @@ export default function ArticleScreen() {
             ))}
           </View>
         ) : null}
+
+        {nudgeVisible ? (
+          <View style={[styles.nudge, { borderColor: theme.border, backgroundColor: theme.surface }]}>
+            <Text style={[styles.nudgeText, { color: theme.text }]}>想在有新文章时收到提醒？</Text>
+            <View style={styles.nudgeActions}>
+              <Pressable
+                onPress={onNudgeEnable}
+                style={[styles.nudgeBtn, { backgroundColor: theme.accent }]}
+                accessibilityRole="button"
+                accessibilityLabel="开启新文章通知"
+              >
+                <Text style={[styles.nudgeBtnText, { color: theme.onAccent }]}>开启</Text>
+              </Pressable>
+              <Pressable onPress={onNudgeDismiss} hitSlop={10} accessibilityRole="button" accessibilityLabel="关闭提醒引导">
+                <X size={18} color={theme.textSecondary} />
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
+
         <View style={{ height: 32 }} />
       </ScrollView>
 
@@ -477,7 +531,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: '800', lineHeight: 32, marginBottom: 10 },
   byline: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 },
   bylineText: { fontSize: 13 },
-  cover: { width: '100%', aspectRatio: 1200 / 615, borderRadius: 8, backgroundColor: '#E4E4E7' },
+  cover: { width: '100%', aspectRatio: 1200 / 615, borderRadius: 8 },
   coverAlt: { fontSize: 12, marginTop: 6, lineHeight: 16 },
   stats: { fontSize: 13, marginTop: 10, lineHeight: 18 },
   noBody: { alignItems: 'center', paddingVertical: 40, gap: 12 },
@@ -485,6 +539,20 @@ const styles = StyleSheet.create({
   retryBtn: { paddingHorizontal: 20, paddingVertical: 12, borderRadius: 10 },
   retryText: { fontSize: 14, fontWeight: '700' },
   sourceNote: { fontSize: 12, lineHeight: 18, marginTop: 16 },
+  nudge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 16,
+  },
+  nudgeText: { flex: 1, fontSize: 14, lineHeight: 20 },
+  nudgeActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  nudgeBtn: { borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16 },
+  nudgeBtnText: { fontSize: 13, fontWeight: '700' },
   originalBtn: {
     borderWidth: 1,
     borderRadius: 10,

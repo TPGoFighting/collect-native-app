@@ -1,9 +1,12 @@
 import { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Bell, ChevronRight, Info, Link2, Settings2, Trash2, History, BookMarked, Save } from 'lucide-react-native';
+import * as Clipboard from 'expo-clipboard';
+import { Bell, ChevronRight, Info, Link2, MessageSquare, Settings2, Trash2, History, BookMarked, Save } from 'lucide-react-native';
+import Constants from 'expo-constants';
 import { useSettings } from '@/lib/theme';
+import { UpdateBanner } from '@/components/UpdateBanner';
 import { countArticles } from '@/lib/db';
 import { clearImageCache, formatBytes, getCacheSize } from '@/lib/images';
 import { restoreBackup, shareBackup } from '@/lib/backup';
@@ -63,6 +66,25 @@ export default function ProfileScreen() {
     ]);
   };
 
+  const FEEDBACK_EMAIL = 'a2897378856@gmail.com';
+
+  const onFeedback = async () => {
+    const version = Constants.expoConfig?.version ?? '2.1.0';
+    const subject = encodeURIComponent('Collect 反馈');
+    const body = encodeURIComponent(`版本 ${version} / 问题描述：`);
+    try {
+      await Linking.openURL(`mailto:${FEEDBACK_EMAIL}?subject=${subject}&body=${body}`);
+    } catch {
+      // No mail client: fall back to copying the address.
+      try {
+        await Clipboard.setStringAsync(FEEDBACK_EMAIL);
+        Alert.alert('已复制联系方式', `邮箱已复制：${FEEDBACK_EMAIL}`);
+      } catch {
+        // clipboard unavailable; stay silent
+      }
+    }
+  };
+
   const rows: { icon: React.ReactNode; label: string; sub?: string; onPress: () => void }[] = [
     { icon: <Settings2 size={20} color={theme.text} />, label: '阅读设置', sub: '字号 / 行距 / 主题', onPress: () => router.push('/settings') },
     { icon: <Bell size={20} color={theme.text} />, label: '新文章通知', sub: '后台同步 / 通知偏好', onPress: () => router.push('/notifications') },
@@ -71,6 +93,7 @@ export default function ProfileScreen() {
     { icon: <BookMarked size={20} color={theme.text} />, label: '我的收藏', onPress: () => router.push('/(tabs)/favorites') },
     { icon: <Save size={20} color={theme.text} />, label: '备份与恢复', sub: '导出 / 导入收藏和历史', onPress: onBackup },
     { icon: <Trash2 size={20} color={theme.text} />, label: '清除缓存', sub: cacheSize !== null ? `图片缓存 ${formatBytes(cacheSize)}` : undefined, onPress: onClearCache },
+    { icon: <MessageSquare size={20} color={theme.text} />, label: '反馈问题', onPress: onFeedback },
     { icon: <Info size={20} color={theme.text} />, label: '关于 Collect', sub: '版本 2.1.0', onPress: () => router.push('/about') },
   ];
 
@@ -84,12 +107,14 @@ export default function ProfileScreen() {
             已收录 {count} 篇文章 · 离线可读
           </Text>
         </View>
+        <UpdateBanner />
         <View style={[styles.list, { borderColor: theme.border }]}>
           {rows.map((r, i) => (
             <Pressable
               key={r.label}
               onPress={r.onPress}
               style={[styles.row, i < rows.length - 1 && { borderBottomWidth: 1, borderBottomColor: theme.border }]}
+              accessibilityRole="button"
             >
               <View style={styles.rowLeft}>
                 {r.icon}

@@ -100,6 +100,7 @@ export default function HomeScreen() {
           onPress={() => router.push('/search')}
           hitSlop={8}
           style={[styles.searchBtn, { borderColor: theme.border }]}
+          accessibilityRole="button"
           accessibilityLabel="搜索"
         >
           <Search size={20} color={theme.text} />

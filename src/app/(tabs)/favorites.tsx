@@ -48,7 +48,7 @@ export default function FavoritesScreen() {
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>收藏</Text>
         {tab === 'history' && items.length > 0 ? (
-          <Pressable onPress={onClearHistory} hitSlop={10} style={styles.clearBtn} accessibilityLabel="清除历史">
+          <Pressable onPress={onClearHistory} hitSlop={10} style={styles.clearBtn} accessibilityRole="button" accessibilityLabel="清除历史">
             <Trash2 size={18} color={theme.textSecondary} />
           </Pressable>
         ) : null}

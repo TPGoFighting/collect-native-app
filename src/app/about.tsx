@@ -5,6 +5,7 @@ import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
 import { ArrowLeft } from 'lucide-react-native';
 import { useSettings } from '@/lib/theme';
+import { UpdateBanner } from '@/components/UpdateBanner';
 
 export default function AboutScreen() {
   const { theme, isDark } = useSettings();
@@ -16,7 +17,7 @@ export default function AboutScreen() {
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.bg }]} edges={['top']}>
       <View style={[styles.header, { borderColor: theme.border }]}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityLabel="返回">
+        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="返回">
           <ArrowLeft size={22} color={theme.text} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: theme.text }]}>关于</Text>
@@ -26,6 +27,7 @@ export default function AboutScreen() {
         <Image source={logo} style={styles.logo} contentFit="contain" />
         <Text style={[styles.name, { color: theme.text }]}>Collect</Text>
         <Text style={[styles.version, { color: theme.textSecondary }]}>版本 2.1.0 · 原生安卓版</Text>
+        <UpdateBanner />
         <Text style={[styles.desc, { color: theme.text }]}>
           把微信、X、小红书、知乎的好文章收进一个口袋，随时离线阅读。文章来自
           collect.tpgofighting.top 的公开收录，App 启动时增量同步，断网也能读。
@@ -33,6 +35,7 @@ export default function AboutScreen() {
         <Pressable
           onPress={() => WebBrowser.openBrowserAsync('https://collect.tpgofighting.top').catch(() => {})}
           style={[styles.linkBtn, { borderColor: theme.border }]}
+          accessibilityRole="button"
         >
           <Text style={[styles.linkText, { color: theme.text }]}>访问网站版 ↗</Text>
         </Pressable>

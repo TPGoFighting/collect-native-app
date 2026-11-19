@@ -91,7 +91,7 @@ export function SectionView({
         <Pressable onPress={() => imageIndex >= 0 && onImagePress(imageIndex)} style={styles.figure}>
           <Image
             source={{ uri: section.url }}
-            style={styles.figureImage}
+            style={[styles.figureImage, { backgroundColor: theme.border }]}
             contentFit="cover"
             transition={150}
             cachePolicy="disk"
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   listRow: { flexDirection: 'row', marginBottom: 6 },
   bullet: { width: 20, flexShrink: 0 },
   figure: { marginVertical: 10 },
-  figureImage: { width: '100%', aspectRatio: 16 / 9, borderRadius: 8, backgroundColor: '#E4E4E7' },
+  figureImage: { width: '100%', aspectRatio: 16 / 9, borderRadius: 8 },
   caption: { fontSize: 12, marginTop: 6, lineHeight: 16 },
   callout: { borderWidth: 1, borderRadius: 12, padding: 14, marginVertical: 10 },
   linkRow: { paddingVertical: 10 },
