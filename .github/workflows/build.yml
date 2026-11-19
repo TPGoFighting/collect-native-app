@@ -119,7 +119,7 @@ jobs:
           if [ "$SIZE" -gt 31457280 ]; then echo "APK over 30 MB hard cap" >&2; exit 1; fi
           if [ "$SIZE" -gt 26214400 ]; then echo "WARNING: APK over 25 MB target"; fi
           cp "$APK" collect-v2.1.1.apk
-          sha256sum collect-v2.1.0.apk
+          sha256sum collect-v2.1.1.apk
 
       - name: Verify APK signature (release keystore)
         env:
@@ -128,9 +128,9 @@ jobs:
         run: |
           APKSIGNER="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)"
           echo "apksigner: $APKSIGNER"
-          "$APKSIGNER" verify collect-v2.1.0.apk || { echo "apksigner verify FAILED" >&2; exit 1; }
+          "$APKSIGNER" verify collect-v2.1.1.apk || { echo "apksigner verify FAILED" >&2; exit 1; }
           KEY_FP="$(keytool -list -v -keystore collect-release.p12 -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" 2>/dev/null | grep -i "SHA256:" | awk '{print $2}' | tr -d ':' | tr 'A-Z' 'a-z')"
-          APK_FP="$("$APKSIGNER" verify --print-certs collect-v2.1.0.apk 2>/dev/null | grep -i "SHA-256" | head -1 | awk '{print $NF}' | tr 'A-Z' 'a-z')"
+          APK_FP="$("$APKSIGNER" verify --print-certs collect-v2.1.1.apk 2>/dev/null | grep -i "SHA-256" | head -1 | awk '{print $NF}' | tr 'A-Z' 'a-z')"
           echo "keystore cert SHA-256: $KEY_FP"
           echo "apk cert SHA-256:      $APK_FP"
           if [ -z "$KEY_FP" ] || [ "$KEY_FP" != "$APK_FP" ]; then
@@ -143,7 +143,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: collect-v2.1.1
-          path: collect-v2.1.0.apk
+          path: collect-v2.1.1.apk
           if-no-files-found: error
 
       - name: Create GitHub Release
