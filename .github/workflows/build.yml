@@ -60,25 +60,12 @@ jobs:
       - name: Expo prebuild (Android)
         run: npx expo prebuild --platform android --non-interactive
 
-      - name: TEMP DEBUG watchedDirectories
+      - name: TEMP DEBUG manual node command
         run: |
-          grep -n "watchedDirectories" android/gradle.properties
-          cat > /tmp/wd-debug.gradle <<'EOF'
-          allprojects {
-            afterEvaluate {
-              tasks.findByName("generateInlineModules")?.with {
-                doFirst {
-                  println("WD-CMD project=" + project.path)
-                  println("WD-CMD watched=[" + watchedDirectoriesSerialized.get() + "]")
-                  println("WD-CMD mirror=" + mirrorDirectory.get().asFile.absolutePath)
-                  println("WD-CMD output=" + outputDirectory.get().asFile.absolutePath)
-                  println("WD-CMD nodeDir=" + nodeWorkingDir.get().asFile.absolutePath)
-                }
-              }
-            }
-          }
-          EOF
-          (cd android && ./gradlew -I /tmp/wd-debug.gradle :expo:generateInlineModules 2>&1 | grep -E "WD-CMD|expo-modules-autolinking failed|FAILED|BUILD" | head -15 || true)
+          cd android
+          node --version
+          node --no-warnings --eval "require('expo/bin/autolinking')" expo-modules-autolinking mirror-kotlin-inline-modules --kotlin-files-mirror-directory "$GITHUB_WORKSPACE/node_modules/expo/android/src/main/java/inline/modules" --inline-modules-list-directory "$GITHUB_WORKSPACE/node_modules/expo/android/build/inline/modules" --watched-directories-serialized '[]'
+          echo "MANUAL EXIT: $?"
 
       - name: Write gradle.properties (signing)
         env:
