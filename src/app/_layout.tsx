@@ -4,6 +4,7 @@ import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ShareIntentProvider, useShareIntentContext } from 'expo-share-intent';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SettingsProvider } from '@/lib/theme';
@@ -13,12 +14,14 @@ import { registerBackgroundSync } from '@/lib/backgroundSync';
 import { configureNotificationChannel, notificationNavigation } from '@/lib/notifications';
 import { classifyIncomingUrl } from '@/lib/links';
 import { dispatchIncoming, setIncomingListener, type IncomingNavigation } from '@/lib/incoming';
+import { ONBOARDING_KEY } from './onboarding';
 
 SplashScreen.preventAutoHideAsync();
 
 function RootLayoutContent() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
+  const [onboarded, setOnboarded] = useState<boolean | null>(null);
   const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntentContext();
   const navigating = useRef(false);
   const processedShare = useRef<string | null>(null);
@@ -48,6 +51,12 @@ function RootLayoutContent() {
         registerBackgroundSync().catch(() => {});
         // Foreground sync: never blocks the first paint. Offline works from seed.
         syncNow().catch(() => {});
+        // First-launch onboarding. Returning users (any saved settings) skip it.
+        const [flag, settingsRaw] = await Promise.all([
+          AsyncStorage.getItem(ONBOARDING_KEY),
+          AsyncStorage.getItem('collect:settings:v1'),
+        ]);
+        if (!cancelled) setOnboarded(flag === 'done' || settingsRaw !== null);
       } finally {
         if (!cancelled) {
           setReady(true);
@@ -115,11 +124,18 @@ function RootLayoutContent() {
     return () => sub.remove();
   }, []);
 
+  // First-launch value onboarding: redirect once the gate has resolved.
+  useEffect(() => {
+    if (ready && onboarded === false) {
+      router.replace('/onboarding');
+    }
+  }, [ready, onboarded, router]);
+
   if (!ready) return null;
 
   return (
     <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
-      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
       <Stack.Screen name="article/[id]" />
       <Stack.Screen name="article/share-card" />
       <Stack.Screen name="recommend" />
@@ -127,7 +143,9 @@ function RootLayoutContent() {
       <Stack.Screen name="history" />
       <Stack.Screen name="settings" />
       <Stack.Screen name="about" />
+      <Stack.Screen name="privacy" />
       <Stack.Screen name="notifications" />
+      <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
     </Stack>
   );
 }

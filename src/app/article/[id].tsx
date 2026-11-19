@@ -19,7 +19,7 @@ import { ArrowLeft, Bookmark, Image as ImageIcon, List, Moon, Share2, Sun, Type 
 import type { Article, Section } from '@/lib/types';
 import { FONT_SIZES, LINE_HEIGHTS } from '@/lib/types';
 import { useSettings } from '@/lib/theme';
-import { getArticle, getArticleMeta, isFavorite, markRead, toggleFavorite } from '@/lib/db';
+import { clearProgress, getArticle, getArticleMeta, getProgress, isFavorite, markRead, setProgress, toggleFavorite } from '@/lib/db';
 import { fetchArticleFull } from '@/lib/sync';
 import { ArticleCard, coverUrl } from '@/components/ArticleCard';
 import { ImageViewer } from '@/components/ImageViewer';
@@ -27,6 +27,10 @@ import { SectionView, type ViewerImage } from '@/components/SectionView';
 import { StateView } from '@/components/StateView';
 import { PressScale } from '@/components/PressScale';
 import { setHandoffArticle } from '@/lib/articleHandoff';
+
+function nowMs(): number {
+  return Date.now();
+}
 
 export default function ArticleScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -37,18 +41,23 @@ export default function ArticleScreen() {
   const [fetchingFull, setFetchingFull] = useState(false);
   const [fullFailed, setFullFailed] = useState(false);
   const [fav, setFav] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgressState] = useState(0);
   const [tocOpen, setTocOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(-1);
   const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
   const headingY = useRef(new Map<number, number>());
+  const restored = useRef(false);
+  const pendingRestore = useRef<number | null>(null);
+  const lastSavedProgress = useRef(0);
+  const lastSavedAt = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       if (!id) return;
       setLoading(true);
+      restored.current = false;
       let a = getArticle(id);
       if (a && a.sections.length === 0) {
         const full = await fetchArticleFull(id);
@@ -60,6 +69,7 @@ export default function ArticleScreen() {
         setFav(isFavorite(id));
         markRead(id);
         setFullFailed(a.sections.length === 0);
+        pendingRestore.current = getProgress(id);
       }
       setLoading(false);
     })();
@@ -111,7 +121,26 @@ export default function ArticleScreen() {
   const onScroll = (e: { nativeEvent: { contentOffset: { y: number }; contentSize: { height: number }; layoutMeasurement: { height: number } } }) => {
     const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
     const max = Math.max(contentSize.height - layoutMeasurement.height, 1);
-    setProgress(Math.min(Math.max(contentOffset.y / max, 0), 1));
+    const ratio = Math.min(Math.max(contentOffset.y / max, 0), 1);
+    setProgressState(ratio);
+    if (!restored.current) {
+      // Restore once the content has actually laid out tall enough to scroll to.
+      if (pendingRestore.current !== null && max > 1) {
+        const target = pendingRestore.current;
+        pendingRestore.current = null;
+        restored.current = true;
+        if (target > 0) scrollRef.current?.scrollTo({ y: target * max, animated: false });
+      }
+      return;
+    }
+    // Throttled save: every 2s or every 5% of progress.
+    const now = nowMs();
+    if (now - lastSavedAt.current >= 2000 || Math.abs(ratio - lastSavedProgress.current) >= 0.05) {
+      lastSavedAt.current = now;
+      lastSavedProgress.current = ratio;
+      if (ratio > 0.9) clearProgress(id);
+      else if (ratio > 0) setProgress(id, ratio);
+    }
   };
 
   const openLink = (url: string) => {

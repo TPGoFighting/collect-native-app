@@ -70,7 +70,8 @@
           "disableIOS": true
         }
       ],
-      "./plugins/withWorkManagerKeepRules.js"
+      "./plugins/withWorkManagerKeepRules.js",
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true

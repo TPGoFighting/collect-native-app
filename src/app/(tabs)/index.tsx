@@ -5,7 +5,8 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { Search, WifiOff, X } from 'lucide-react-native';
 import type { ArticleMeta } from '@/lib/types';
 import { useSettings } from '@/lib/theme';
-import { getReadMap, listArticles } from '@/lib/db';
+import type { UnfinishedArticle } from '@/lib/db';
+import { getReadMap, listArticles, listUnfinished } from '@/lib/db';
 import { lastSyncAt, lastSyncError, syncNow } from '@/lib/sync';
 import { ArticleCard } from '@/components/ArticleCard';
 import { PlatformChips } from '@/components/PlatformChips';
@@ -34,12 +35,14 @@ export default function HomeScreen() {
   const [offline, setOffline] = useState(false);
   const [syncIssue, setSyncIssue] = useState<string | null>(null);
   const [lastSync, setLastSync] = useState<string | null>(null);
+  const [unfinished, setUnfinished] = useState<UnfinishedArticle | null>(null);
   const knownCount = useRef(0);
 
   const reload = useCallback(() => {
     const all = listArticles({ platform: platform === 'all' ? undefined : platform });
     setArticles(all);
     setReadIds(getReadMap());
+    setUnfinished(listUnfinished()[0] ?? null);
     setLastSync(lastSyncAt());
     setSyncIssue(lastSyncError());
     if (knownCount.current === 0) knownCount.current = listArticles().length;
@@ -128,6 +131,28 @@ export default function HomeScreen() {
 
       <PlatformChips selected={platform} onSelect={setPlatform} />
 
+      {unfinished ? (
+        <Pressable
+          onPress={() => openArticle(unfinished.meta.id)}
+          style={({ pressed }) => [
+            styles.resumeCard,
+            { backgroundColor: theme.card, borderColor: theme.border, opacity: pressed ? 0.85 : 1 },
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel={`继续阅读 ${unfinished.meta.title}`}
+        >
+          <Text style={[styles.resumeLabel, { color: theme.textSecondary }]}>继续阅读</Text>
+          <Text style={[styles.resumeTitle, { color: theme.text }]} numberOfLines={1}>
+            {unfinished.meta.title}
+          </Text>
+          <View style={[styles.resumeTrack, { backgroundColor: theme.border }]}>
+            <View
+              style={[styles.resumeFill, { width: `${Math.round(unfinished.progress * 100)}%`, backgroundColor: theme.accent }]}
+            />
+          </View>
+        </Pressable>
+      ) : null}
+
       <SectionList
         sections={sections}
         keyExtractor={(row: Row) => row.key}
@@ -198,5 +223,17 @@ const styles = StyleSheet.create({
   },
   offlineText: { fontSize: 12 },
   month: { fontSize: 13, fontWeight: '700', paddingHorizontal: 16, paddingVertical: 10 },
+  resumeCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginTop: 8,
+    padding: 14,
+    gap: 6,
+  },
+  resumeLabel: { fontSize: 12, fontWeight: '700' },
+  resumeTitle: { fontSize: 16, fontWeight: '700', lineHeight: 22 },
+  resumeTrack: { height: 3, borderRadius: 2, marginTop: 2 },
+  resumeFill: { height: 3, borderRadius: 2 },
   listContent: { paddingBottom: 24 },
 });

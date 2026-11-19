@@ -248,6 +248,52 @@ export function removeRecommend(ts: number): void {
   setState('recommend', JSON.stringify(getRecommendList().filter((x) => x.ts !== ts)));
 }
 
+// ---------- reading progress ----------
+export function setProgress(id: string, progress: number): void {
+  setState(`progress:${id}`, JSON.stringify({ progress, ts: Date.now() }));
+}
+export function getProgress(id: string): number | null {
+  const raw = getState(`progress:${id}`);
+  if (raw === null) return null;
+  const parsed = safeJson<{ progress: number }>(raw, { progress: -1 });
+  return parsed.progress >= 0 && parsed.progress <= 1 ? parsed.progress : null;
+}
+export function clearProgress(id: string): void {
+  db.runSync('DELETE FROM user_state WHERE key = ?', [`progress:${id}`]);
+}
+export interface UnfinishedArticle {
+  meta: ArticleMeta;
+  progress: number;
+}
+export function listUnfinished(): UnfinishedArticle[] {
+  const rows = db.getAllSync<{ key: string; value: string }>(
+    "SELECT key, value FROM user_state WHERE key LIKE 'progress:%'",
+  );
+  const items: { id: string; progress: number }[] = [];
+  for (const r of rows) {
+    const parsed = safeJson<{ progress: number }>(r.value, { progress: -1 });
+    if (parsed.progress > 0 && parsed.progress < 0.9) {
+      items.push({ id: r.key.slice('progress:'.length), progress: parsed.progress });
+    }
+  }
+  if (!items.length) return [];
+  const placeholders = items.map(() => '?').join(',');
+  const metas = db
+    .getAllSync<Record<string, unknown>>(
+      `SELECT ${META_COLS} FROM articles WHERE id IN (${placeholders})`,
+      items.map((x) => x.id),
+    )
+    .map(rowToMeta);
+  const byId = new Map(metas.map((m) => [m.id, m]));
+  return items
+    .map((x) => {
+      const meta = byId.get(x.id);
+      return meta ? { meta, progress: x.progress } : null;
+    })
+    .filter((x): x is UnfinishedArticle => x !== null)
+    .sort((a, b) => b.progress - a.progress);
+}
+
 // ---------- new-article notifications ----------
 export function claimNewArticleNotification(id: string): boolean {
   if (isRead(id)) return false;
@@ -269,6 +315,131 @@ export function hasNewArticleNotification(id: string): boolean {
     'SELECT id FROM notifications WHERE article_id = ?',
     [id],
   ) !== null;
+}
+
+// ---------- user data export / import ----------
+export const USER_DATA_SCHEMA_VERSION = 1;
+
+export interface UserDataExport {
+  schema_version: number;
+  exported_at: string;
+  favorites: string[];
+  read: string[];
+  history: string[];
+  search_history: string[];
+  recommend: RecommendItem[];
+  progress: Record<string, number>;
+}
+
+export function exportUserData(): UserDataExport {
+  const favRows = db.getAllSync<{ key: string }>("SELECT key FROM user_state WHERE key LIKE 'fav:%' AND value='1'");
+  const readRows = db.getAllSync<{ key: string; value: string }>("SELECT key, value FROM user_state WHERE key LIKE 'read:%'");
+  const progressRows = db.getAllSync<{ key: string; value: string }>("SELECT key, value FROM user_state WHERE key LIKE 'progress:%'");
+  const progress: Record<string, number> = {};
+  for (const r of progressRows) {
+    const p = getProgress(r.key.slice('progress:'.length));
+    if (p !== null) progress[r.key.slice('progress:'.length)] = p;
+  }
+  return {
+    schema_version: USER_DATA_SCHEMA_VERSION,
+    exported_at: new Date().toISOString(),
+    favorites: favRows.map((r) => r.key.slice('fav:'.length)),
+    read: readRows.map((r) => r.key.slice('read:'.length)),
+    history: getHistoryIds(),
+    search_history: getSearchHistory(),
+    recommend: getRecommendList(),
+    progress,
+  };
+}
+
+export interface ImportResult {
+  favorites: number;
+  read: number;
+  history: number;
+  searchHistory: number;
+  recommend: number;
+  progress: number;
+}
+
+export class ImportValidationError extends Error {}
+
+/** Validate and merge a user-data backup into the local store. Throws ImportValidationError on bad input. */
+export function importUserData(raw: string): ImportResult {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new ImportValidationError('文件不是有效的 JSON');
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new ImportValidationError('文件格式不对');
+  }
+  const data = parsed as Record<string, unknown>;
+  if (data.schema_version !== USER_DATA_SCHEMA_VERSION) {
+    throw new ImportValidationError(`备份版本不受支持（schema_version: ${String(data.schema_version)}）`);
+  }
+
+  const strArr = (v: unknown): string[] =>
+    Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+  const favorites = strArr(data.favorites);
+  const read = strArr(data.read);
+  const history = strArr(data.history);
+  const searchHistory = strArr(data.search_history);
+  const recommendRaw = Array.isArray(data.recommend) ? data.recommend : [];
+  const recommend: RecommendItem[] = [];
+  for (const item of recommendRaw) {
+    if (typeof item !== 'object' || item === null) continue;
+    const r = item as Record<string, unknown>;
+    if (typeof r.url !== 'string' || typeof r.ts !== 'number') continue;
+    recommend.push({ url: r.url, note: typeof r.note === 'string' ? r.note : '', ts: r.ts });
+  }
+  const progressRaw = typeof data.progress === 'object' && data.progress !== null ? data.progress : {};
+  const progress: Record<string, number> = {};
+  for (const [k, v] of Object.entries(progressRaw as Record<string, unknown>)) {
+    if (typeof v === 'number' && v > 0 && v <= 1) progress[k] = v;
+  }
+
+  const existingFav = new Set(
+    db.getAllSync<{ key: string }>("SELECT key FROM user_state WHERE key LIKE 'fav:%'").map((r) => r.key.slice(4)),
+  );
+  const existingRead = getReadMap();
+  const existingRecommend = new Set(getRecommendList().map((x) => x.url));
+
+  const result: ImportResult = {
+    favorites: 0, read: 0, history: 0, searchHistory: 0, recommend: 0, progress: 0,
+  };
+
+  db.withTransactionSync(() => {
+    for (const id of favorites) {
+      if (existingFav.has(id)) continue;
+      setState(`fav:${id}`, '1');
+      result.favorites += 1;
+    }
+    for (const id of read) {
+      if (existingRead.has(id)) continue;
+      setState(`read:${id}`, new Date().toISOString());
+      result.read += 1;
+    }
+    const mergedHistory = [...history, ...getHistoryIds().filter((x) => !history.includes(x))];
+    setState('history', JSON.stringify(mergedHistory.slice(0, 200)));
+    result.history = history.length;
+    const mergedSearch = [...searchHistory, ...getSearchHistory().filter((x) => !searchHistory.includes(x))];
+    setState('search_history', JSON.stringify(mergedSearch.slice(0, 20)));
+    result.searchHistory = searchHistory.length;
+    const mergedRecommend = [...getRecommendList()];
+    for (const item of recommend) {
+      if (existingRecommend.has(item.url) || mergedRecommend.some((x) => x.url === item.url)) continue;
+      mergedRecommend.push(item);
+      result.recommend += 1;
+    }
+    mergedRecommend.sort((a, b) => b.ts - a.ts);
+    setState('recommend', JSON.stringify(mergedRecommend));
+    for (const [id, p] of Object.entries(progress)) {
+      setProgress(id, p);
+      result.progress += 1;
+    }
+  });
+  return result;
 }
 
 // ---------- sync meta ----------

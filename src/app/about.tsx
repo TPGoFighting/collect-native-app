@@ -36,6 +36,13 @@ export default function AboutScreen() {
         >
           <Text style={[styles.linkText, { color: theme.text }]}>访问网站版 ↗</Text>
         </Pressable>
+        <Pressable
+          onPress={() => router.push('/privacy')}
+          style={[styles.linkBtn, { borderColor: theme.border }]}
+          accessibilityRole="button"
+        >
+          <Text style={[styles.linkText, { color: theme.text }]}>隐私政策</Text>
+        </Pressable>
         <Text style={[styles.foot, { color: theme.textSecondary }]}>
           黑白设计 · 无账号 · 无追踪 · 不含任何 Google 服务
         </Text>

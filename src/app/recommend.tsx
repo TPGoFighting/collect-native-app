@@ -78,7 +78,7 @@ export default function RecommendScreen() {
         ListHeaderComponent={
           <View style={styles.form}>
             <Text style={[styles.hint, { color: theme.textSecondary }]}>
-              看到值得收录的文章，先把链接存下来；复制后发给大肥鱼即可转换上线。本站是静态站，App 内无法自动转换。
+              看到值得收录的文章，先把链接存下来；复制后发给站长即可收录上线。本站是静态站，App 内无法自动收录。
             </Text>
             <TextInput
               value={url}
@@ -104,7 +104,7 @@ export default function RecommendScreen() {
               <Pressable onPress={copyAll} style={[styles.copyBtn, { borderColor: theme.border }]}>
                 <Copy size={16} color={theme.text} />
                 <Text style={[styles.copyText, { color: theme.text }]}>
-                  {copied ? '已复制' : `复制全部给大肥鱼（${items.length} 条）`}
+                  {copied ? '已复制' : `复制全部链接（${items.length} 条），发送给站长即可收录`}
                 </Text>
               </Pressable>
             ) : null}
