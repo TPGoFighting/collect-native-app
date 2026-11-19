@@ -60,6 +60,18 @@ jobs:
       - name: Expo prebuild (Android)
         run: npx expo prebuild --platform android --non-interactive
 
+      - name: TEMP DEBUG watchedDirectories
+        run: |
+          grep -n "watchedDirectories" android/gradle.properties
+          cat > /tmp/wd-debug.gradle <<'EOF'
+          allprojects {
+            def v = findProperty("expo.inlineModules.watchedDirectories")
+            println("WD-DEBUG project=" + project.path + " value=[" + v + "] class=" + (v == null ? "null" : v.getClass().name))
+          }
+          EOF
+          cd android && ./gradlew -I /tmp/wd-debug.gradle help 2>&1 | grep -E "WD-DEBUG|BUILD" | head -20
+          cd android && ./gradlew :expo:generateInlineModules --info 2>&1 | grep -E "watched-directories-serialized|Starting process" | head -5
+
       - name: Write gradle.properties (signing)
         env:
           STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
