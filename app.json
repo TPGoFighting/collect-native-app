@@ -2,14 +2,14 @@
   "expo": {
     "name": "Collect",
     "slug": "collect-native-app",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "collect",
     "userInterfaceStyle": "automatic",
     "android": {
       "package": "top.tpgofighting.collect",
-      "versionCode": 4,
+      "versionCode": 5,
       "intentFilters": [
         {
           "action": "VIEW",

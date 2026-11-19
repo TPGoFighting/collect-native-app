@@ -69,7 +69,7 @@ export default function ProfileScreen() {
   const FEEDBACK_EMAIL = 'a2897378856@gmail.com';
 
   const onFeedback = async () => {
-    const version = Constants.expoConfig?.version ?? '2.1.0';
+    const version = Constants.expoConfig?.version ?? '2.1.1';
     const subject = encodeURIComponent('Collect 反馈');
     const body = encodeURIComponent(`版本 ${version} / 问题描述：`);
     try {
@@ -94,7 +94,7 @@ export default function ProfileScreen() {
     { icon: <Save size={20} color={theme.text} />, label: '备份与恢复', sub: '导出 / 导入收藏和历史', onPress: onBackup },
     { icon: <Trash2 size={20} color={theme.text} />, label: '清除缓存', sub: cacheSize !== null ? `图片缓存 ${formatBytes(cacheSize)}` : undefined, onPress: onClearCache },
     { icon: <MessageSquare size={20} color={theme.text} />, label: '反馈问题', onPress: onFeedback },
-    { icon: <Info size={20} color={theme.text} />, label: '关于 Collect', sub: '版本 2.1.0', onPress: () => router.push('/about') },
+    { icon: <Info size={20} color={theme.text} />, label: '关于 Collect', sub: '版本 2.1.1', onPress: () => router.push('/about') },
   ];
 
   return (
