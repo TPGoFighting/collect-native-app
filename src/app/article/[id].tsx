@@ -15,7 +15,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
 import * as Haptics from 'expo-haptics';
-import { ArrowLeft, Bookmark, List, Moon, Share2, Sun, Type } from 'lucide-react-native';
+import { ArrowLeft, Bookmark, Image as ImageIcon, List, Moon, Share2, Sun, Type } from 'lucide-react-native';
 import type { Article, Section } from '@/lib/types';
 import { FONT_SIZES, LINE_HEIGHTS } from '@/lib/types';
 import { useSettings } from '@/lib/theme';
@@ -24,6 +24,9 @@ import { fetchArticleFull } from '@/lib/sync';
 import { ArticleCard, coverUrl } from '@/components/ArticleCard';
 import { ImageViewer } from '@/components/ImageViewer';
 import { SectionView, type ViewerImage } from '@/components/SectionView';
+import { StateView } from '@/components/StateView';
+import { PressScale } from '@/components/PressScale';
+import { setHandoffArticle } from '@/lib/articleHandoff';
 
 export default function ArticleScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -32,6 +35,7 @@ export default function ArticleScreen() {
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchingFull, setFetchingFull] = useState(false);
+  const [fullFailed, setFullFailed] = useState(false);
   const [fav, setFav] = useState(false);
   const [progress, setProgress] = useState(0);
   const [tocOpen, setTocOpen] = useState(false);
@@ -55,6 +59,7 @@ export default function ArticleScreen() {
         setArticle(a);
         setFav(isFavorite(id));
         markRead(id);
+        setFullFailed(a.sections.length === 0);
       }
       setLoading(false);
     })();
@@ -139,14 +144,42 @@ export default function ArticleScreen() {
     if (!id) return;
     setFetchingFull(true);
     const full = await fetchArticleFull(id);
-    if (full) setArticle(full);
+    if (full) {
+      setArticle(full);
+      setFullFailed(false);
+    }
     setFetchingFull(false);
   };
 
-  if (loading || !article) {
+  const openShareCard = () => {
+    if (!article) return;
+    setHandoffArticle(article);
+    router.push({ pathname: '/article/share-card', params: { id: article.id } });
+  };
+
+  if (loading) {
     return (
       <SafeAreaView style={[styles.center, { backgroundColor: theme.bg }]}>
         <ActivityIndicator color={theme.textSecondary} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!article) {
+    return (
+      <SafeAreaView style={[styles.root, { backgroundColor: theme.bg }]} edges={['top']}>
+        <View style={[styles.header, { borderColor: theme.border }]}>
+          <Pressable onPress={() => router.back()} hitSlop={10} style={styles.iconBtn} accessibilityLabel="返回">
+            <ArrowLeft size={22} color={theme.text} />
+          </Pressable>
+          <View style={styles.iconBtn} />
+        </View>
+        <StateView
+          title="文章不存在"
+          detail="链接可能已失效，或这篇文章尚未同步到本地。下拉刷新首页后再试。"
+          actionLabel="再试一次"
+          onAction={() => router.replace('/(tabs)')}
+        />
       </SafeAreaView>
     );
   }
@@ -173,9 +206,12 @@ export default function ArticleScreen() {
           <Pressable onPress={onToggleFav} hitSlop={10} style={styles.iconBtn} accessibilityLabel="收藏">
             <Bookmark size={22} color={theme.text} fill={fav ? theme.text : 'transparent'} />
           </Pressable>
-          <Pressable onPress={onShare} hitSlop={10} style={styles.iconBtn} accessibilityLabel="分享">
+          <PressScale onPress={openShareCard} hitSlop={10} style={styles.iconBtn} accessibilityLabel="生成分享长图">
+            <ImageIcon size={22} color={theme.text} />
+          </PressScale>
+          <PressScale onPress={onShare} hitSlop={10} style={styles.iconBtn} accessibilityLabel="分享">
             <Share2 size={22} color={theme.text} />
-          </Pressable>
+          </PressScale>
         </View>
       </View>
       {/* 3px progress bar */}
@@ -217,7 +253,7 @@ export default function ArticleScreen() {
         {article.sections.length === 0 ? (
           <View style={styles.noBody}>
             <Text style={[styles.noBodyText, { color: theme.textSecondary }]}>
-              正文尚未同步到本地（可能在离线时打开）
+              {fullFailed ? '正文获取失败，请检查网络后重试' : '正文尚未同步到本地（可能在离线时打开）'}
             </Text>
             <Pressable
               onPress={retryFull}

@@ -6,9 +6,10 @@ import { Search, WifiOff, X } from 'lucide-react-native';
 import type { ArticleMeta } from '@/lib/types';
 import { useSettings } from '@/lib/theme';
 import { getReadMap, listArticles } from '@/lib/db';
-import { lastSyncAt, syncNow } from '@/lib/sync';
+import { lastSyncAt, lastSyncError, syncNow } from '@/lib/sync';
 import { ArticleCard } from '@/components/ArticleCard';
 import { PlatformChips } from '@/components/PlatformChips';
+import { StateView } from '@/components/StateView';
 
 interface Row {
   key: string;
@@ -31,6 +32,7 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [newCount, setNewCount] = useState(0);
   const [offline, setOffline] = useState(false);
+  const [syncIssue, setSyncIssue] = useState<string | null>(null);
   const [lastSync, setLastSync] = useState<string | null>(null);
   const knownCount = useRef(0);
 
@@ -39,6 +41,7 @@ export default function HomeScreen() {
     setArticles(all);
     setReadIds(getReadMap());
     setLastSync(lastSyncAt());
+    setSyncIssue(lastSyncError());
     if (knownCount.current === 0) knownCount.current = listArticles().length;
   }, [platform]);
 
@@ -55,8 +58,10 @@ export default function HomeScreen() {
     setRefreshing(false);
     if (res.error) {
       setOffline(true);
+      setSyncIssue(res.error);
     } else {
       setOffline(false);
+      setSyncIssue(res.failedIds?.length ? `正文获取失败 ${res.failedIds.length} 篇` : null);
       const gained = res.added + res.updated;
       if (gained > 0 && before > 0) setNewCount(gained);
     }
@@ -115,6 +120,11 @@ export default function HomeScreen() {
           </Text>
         </View>
       ) : null}
+      {syncIssue && !offline ? (
+        <View style={[styles.offline, { borderColor: theme.border }]}>
+          <Text style={[styles.offlineText, { color: theme.textSecondary }]}>{syncIssue} · 下拉重试</Text>
+        </View>
+      ) : null}
 
       <PlatformChips selected={platform} onSelect={setPlatform} />
 
@@ -131,9 +141,12 @@ export default function HomeScreen() {
           ) : null
         }
         ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={[styles.emptyText, { color: theme.textSecondary }]}>暂无文章，下拉刷新试试</Text>
-          </View>
+          <StateView
+            title="暂无文章"
+            detail={offline ? '网络不可用，恢复连接后下拉刷新即可同步。' : '下拉刷新，从 collect.tpgofighting.top 获取最新收录。'}
+            actionLabel={offline ? undefined : '立即刷新'}
+            onAction={offline ? undefined : onRefresh}
+          />
         }
         contentContainerStyle={styles.listContent}
       />
@@ -186,6 +199,4 @@ const styles = StyleSheet.create({
   offlineText: { fontSize: 12 },
   month: { fontSize: 13, fontWeight: '700', paddingHorizontal: 16, paddingVertical: 10 },
   listContent: { paddingBottom: 24 },
-  empty: { alignItems: 'center', paddingVertical: 48 },
-  emptyText: { fontSize: 14 },
 });

@@ -2,14 +2,36 @@
   "expo": {
     "name": "Collect",
     "slug": "collect-native-app",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "collect",
     "userInterfaceStyle": "automatic",
     "android": {
       "package": "top.tpgofighting.collect",
-      "versionCode": 3,
+      "versionCode": 4,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": ["BROWSABLE", "DEFAULT"],
+          "data": {
+            "scheme": "https",
+            "host": "collect.tpgofighting.top",
+            "pathPrefix": "/article/"
+          },
+          "autoVerify": true
+        },
+        {
+          "action": "VIEW",
+          "category": ["BROWSABLE", "DEFAULT"],
+          "data": {
+            "scheme": "https",
+            "host": "collect.tpgofighting.top",
+            "pathPrefix": "/"
+          },
+          "autoVerify": true
+        }
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -33,7 +55,21 @@
         }
       ],
       "./plugins/withReleaseSigning.js",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#09090B"
+        }
+      ],
+      [
+        "expo-share-intent",
+        {
+          "androidIntentFilters": ["text/*"],
+          "disableIOS": true
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

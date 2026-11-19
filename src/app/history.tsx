@@ -7,6 +7,7 @@ import type { ArticleMeta } from '@/lib/types';
 import { useSettings } from '@/lib/theme';
 import { clearHistory, getReadMap, listHistory } from '@/lib/db';
 import { ArticleCard } from '@/components/ArticleCard';
+import { StateView } from '@/components/StateView';
 
 export default function HistoryScreen() {
   const { theme } = useSettings();
@@ -60,11 +61,7 @@ export default function HistoryScreen() {
             onPress={() => router.push(`/article/${item.id}`)}
           />
         )}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={[styles.emptyText, { color: theme.textSecondary }]}>还没有阅读记录</Text>
-          </View>
-        }
+        ListEmptyComponent={<StateView title="还没有阅读记录" detail="打开任意文章后，这里会留下记录。" />}
         contentContainerStyle={styles.listContent}
       />
     </SafeAreaView>
@@ -84,6 +81,4 @@ const styles = StyleSheet.create({
   iconBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '800' },
   listContent: { paddingBottom: 24, paddingTop: 12 },
-  empty: { alignItems: 'center', paddingVertical: 48 },
-  emptyText: { fontSize: 14 },
 });

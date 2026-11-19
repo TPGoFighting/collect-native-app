@@ -7,6 +7,7 @@ import type { ArticleMeta } from '@/lib/types';
 import { useSettings } from '@/lib/theme';
 import { clearHistory, getReadMap, listFavorites, listHistory } from '@/lib/db';
 import { ArticleCard } from '@/components/ArticleCard';
+import { StateView } from '@/components/StateView';
 
 type Tab = 'fav' | 'history';
 
@@ -86,11 +87,10 @@ export default function FavoritesScreen() {
           />
         )}
         ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
-              {tab === 'fav' ? '还没有收藏的文章\n在文章页点右上角书签即可收藏' : '还没有阅读记录'}
-            </Text>
-          </View>
+          <StateView
+            title={tab === 'fav' ? '还没有收藏' : '还没有阅读记录'}
+            detail={tab === 'fav' ? '在文章页点右上角书签即可收藏。' : undefined}
+          />
         }
         contentContainerStyle={styles.listContent}
       />
@@ -121,6 +121,4 @@ const styles = StyleSheet.create({
   segBtn: { flex: 1, paddingVertical: 9, borderRadius: 8, alignItems: 'center' },
   segText: { fontSize: 14, fontWeight: '700' },
   listContent: { paddingBottom: 24, paddingTop: 4 },
-  empty: { alignItems: 'center', paddingVertical: 48, paddingHorizontal: 32 },
-  emptyText: { fontSize: 14, lineHeight: 22, textAlign: 'center' },
 });

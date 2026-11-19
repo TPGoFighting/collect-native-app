@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { ChevronRight, Info, Link2, Settings2, Trash2, History, BookMarked } from 'lucide-react-native';
+import { Bell, ChevronRight, Info, Link2, Settings2, Trash2, History, BookMarked } from 'lucide-react-native';
 import { useSettings } from '@/lib/theme';
 import { countArticles } from '@/lib/db';
 import { clearImageCache, formatBytes, getCacheSize } from '@/lib/images';
@@ -38,11 +38,12 @@ export default function ProfileScreen() {
 
   const rows: { icon: React.ReactNode; label: string; sub?: string; onPress: () => void }[] = [
     { icon: <Settings2 size={20} color={theme.text} />, label: '阅读设置', sub: '字号 / 行距 / 主题', onPress: () => router.push('/settings') },
+    { icon: <Bell size={20} color={theme.text} />, label: '新文章通知', sub: '后台同步 / 通知偏好', onPress: () => router.push('/notifications') },
     { icon: <Link2 size={20} color={theme.text} />, label: '推荐文章', sub: '把想收录的链接存下来', onPress: () => router.push('/recommend') },
     { icon: <History size={20} color={theme.text} />, label: '阅读历史', onPress: () => router.push('/history') },
     { icon: <BookMarked size={20} color={theme.text} />, label: '我的收藏', onPress: () => router.push('/(tabs)/favorites') },
     { icon: <Trash2 size={20} color={theme.text} />, label: '清除缓存', sub: cacheSize !== null ? `图片缓存 ${formatBytes(cacheSize)}` : undefined, onPress: onClearCache },
-    { icon: <Info size={20} color={theme.text} />, label: '关于 Collect', sub: '版本 2.0.0', onPress: () => router.push('/about') },
+    { icon: <Info size={20} color={theme.text} />, label: '关于 Collect', sub: '版本 2.1.0', onPress: () => router.push('/about') },
   ];
 
   return (

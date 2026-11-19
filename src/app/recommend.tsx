@@ -1,31 +1,46 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { ArrowLeft, Copy, Trash2 } from 'lucide-react-native';
 import { useSettings } from '@/lib/theme';
 import { addRecommend, getRecommendList, removeRecommend, type RecommendItem } from '@/lib/db';
+import { extractSharedUrl } from '@/lib/links';
 
 export default function RecommendScreen() {
   const { theme } = useSettings();
   const router = useRouter();
+  const params = useLocalSearchParams<{ url?: string }>();
   const [url, setUrl] = useState('');
   const [note, setNote] = useState('');
   const [items, setItems] = useState<RecommendItem[]>([]);
   const [copied, setCopied] = useState(false);
+  const incomingUrl = useMemo(() => (typeof params.url === 'string' ? params.url : ''), [params.url]);
+  const prefilled = useRef<string | null>(null);
 
   const reload = useCallback(() => setItems(getRecommendList()), []);
   useFocusEffect(reload);
 
+  useEffect(() => {
+    if (!incomingUrl || prefilled.current === incomingUrl) return;
+    prefilled.current = incomingUrl;
+    setUrl(incomingUrl);
+    const alreadySaved = getRecommendList().some((x) => x.url === incomingUrl);
+    Alert.alert(
+      alreadySaved ? '链接已在待转换列表' : '已从分享中填入链接',
+      alreadySaved ? '可以直接复制或删除已有条目。' : '确认后点击“添加到待转换列表”。',
+    );
+  }, [incomingUrl]);
+
   const onAdd = () => {
     const u = url.trim();
-    if (!u) {
-      Alert.alert('先填链接', '粘贴一篇微信 / X / 小红书 / 知乎文章的链接。');
+    if (!/^https?:\/\//i.test(u) || !extractSharedUrl(u)) {
+      Alert.alert('链接格式不对', '请填入以 http:// 或 https:// 开头的有效文章链接。');
       return;
     }
-    if (!/^https?:\/\//i.test(u)) {
-      Alert.alert('链接格式不对', '链接需要以 http:// 或 https:// 开头。');
+    if (getRecommendList().some((x) => x.url === u)) {
+      Alert.alert('重复链接', '这条链接已经在待转换列表里了。');
       return;
     }
     addRecommend(u, note);

@@ -38,10 +38,11 @@ bash scripts/deploy-data.sh   # 抽取 -> rsync -> chmod -R a+rX -> 公网验证
 GitHub Actions（`.github/workflows/build.yml`）：push 到 main 或打 tag `v*` 即构建
 release APK（Expo prebuild + Gradle assembleRelease，**不用 EAS Build**）。
 
-- 包名 `top.tpgofighting.collect`，v2.0.0 / versionCode 3，单 ABI arm64-v8a。
+- 包名 `top.tpgofighting.collect`，v2.1.0 / versionCode 4，单 ABI arm64-v8a。
 - Release 签名：新生成的 keystore（`collect-release.p12`，openssl 生成，备份在
   `keystore/`，密码在 `keystore/store-password.txt`——**请抄进 1Password**）。
-  旧版 v1.x 是 debug 签名，**无法覆盖升级：老用户必须先卸载旧版再装 v2.0.0**。
+  旧版 v1.x 是 debug 签名，无法直接覆盖升级；从 v2.0.0 起使用正式
+  release 签名，已安装 v2.x 的用户可直接覆盖升级到 v2.1.0。
 - Secrets：`ANDROID_KEYSTORE_BASE64` / `ANDROID_KEYSTORE_PASSWORD` /
   `ANDROID_KEY_ALIAS` / `ANDROID_KEY_PASSWORD`。
 

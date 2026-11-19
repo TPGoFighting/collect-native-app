@@ -7,6 +7,7 @@ import type { ArticleMeta } from '@/lib/types';
 import { useSettings } from '@/lib/theme';
 import { addSearchHistory, getReadMap, getSearchHistory, listArticles } from '@/lib/db';
 import { ArticleCard } from '@/components/ArticleCard';
+import { StateView } from '@/components/StateView';
 
 export default function SearchScreen() {
   const { theme } = useSettings();
@@ -104,9 +105,7 @@ export default function SearchScreen() {
             <ArticleCard article={item} isRead={readIds.has(item.id)} onPress={() => openArticle(item.id)} />
           )}
           ListEmptyComponent={
-            <View style={styles.empty}>
-              <Text style={[styles.emptyText, { color: theme.textSecondary }]}>没有找到相关文章</Text>
-            </View>
+            <StateView title={query ? '没有找到相关文章' : '搜索文章'} detail={query ? '换个关键词，或从首页平台筛选中浏览。' : '输入标题、作者或关键词开始搜索。'} />
           }
           ListHeaderComponent={
             results.length > 0 ? (
@@ -142,6 +141,4 @@ const styles = StyleSheet.create({
   chipText: { fontSize: 14 },
   count: { fontSize: 13, paddingHorizontal: 16, paddingVertical: 10 },
   listContent: { paddingBottom: 24 },
-  empty: { alignItems: 'center', paddingVertical: 48 },
-  emptyText: { fontSize: 14 },
 });

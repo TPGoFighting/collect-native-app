@@ -50,3 +50,6 @@ curl -fsSL -o /dev/null "https://collect.tpgofighting.top/data/articles/$FIRST_I
 curl -fsSL -o /dev/null "https://collect.tpgofighting.top/assets/covers/$FIRST_ID.webp"
 echo "OK: data live, $COUNT articles"
 echo "NOTE: assets/seed-data changed — commit it before the next APK build."
+
+echo "== check App Links verification file =="
+node scripts/verify-assetlinks.mjs || echo "WARN: assetlinks.json not live yet — App Links will not verify until it is deployed"

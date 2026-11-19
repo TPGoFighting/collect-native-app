@@ -41,6 +41,11 @@ export function initDb(): { seeded: boolean; count: number } {
     );
     CREATE INDEX IF NOT EXISTS idx_articles_date ON articles(date DESC);
     CREATE INDEX IF NOT EXISTS idx_articles_platform ON articles(platform);
+    CREATE TABLE IF NOT EXISTS notifications (
+      id TEXT PRIMARY KEY,
+      article_id TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
   `);
   const row = db.getFirstSync<{ c: number }>('SELECT COUNT(*) AS c FROM articles');
   const count = row?.c ?? 0;
@@ -241,6 +246,29 @@ export function addRecommend(url: string, note: string): void {
 }
 export function removeRecommend(ts: number): void {
   setState('recommend', JSON.stringify(getRecommendList().filter((x) => x.ts !== ts)));
+}
+
+// ---------- new-article notifications ----------
+export function claimNewArticleNotification(id: string): boolean {
+  if (isRead(id)) return false;
+  const existing = db.getFirstSync<{ id: string }>(
+    'SELECT id FROM notifications WHERE article_id = ?',
+    [id],
+  );
+  if (existing) return false;
+  db.runSync('INSERT OR IGNORE INTO notifications(id,article_id,created_at) VALUES(?,?,?)', [
+    `article:${id}`,
+    id,
+    new Date().toISOString(),
+  ]);
+  return true;
+}
+
+export function hasNewArticleNotification(id: string): boolean {
+  return db.getFirstSync<{ id: string }>(
+    'SELECT id FROM notifications WHERE article_id = ?',
+    [id],
+  ) !== null;
 }
 
 // ---------- sync meta ----------

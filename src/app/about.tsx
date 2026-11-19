@@ -25,7 +25,7 @@ export default function AboutScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Image source={logo} style={styles.logo} contentFit="contain" />
         <Text style={[styles.name, { color: theme.text }]}>Collect</Text>
-        <Text style={[styles.version, { color: theme.textSecondary }]}>版本 2.0.0 · 原生安卓版</Text>
+        <Text style={[styles.version, { color: theme.textSecondary }]}>版本 2.1.0 · 原生安卓版</Text>
         <Text style={[styles.desc, { color: theme.text }]}>
           把微信、X、小红书、知乎的好文章收进一个口袋，随时离线阅读。文章来自
           collect.tpgofighting.top 的公开收录，App 启动时增量同步，断网也能读。
