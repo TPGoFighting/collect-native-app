@@ -85,9 +85,12 @@ jobs:
         # for the Expo plugin's fragile JSON.parse of this property (see above).
         # -PreactNativeArchitectures=arm64-v8a: single ABI per the product design
         # (the template default ships 4 ABIs and balloons the APK past 100 MB).
+        # -Pexpo.useLegacyPackaging=true: compress .so files in the APK (the
+        # template default stores them uncompressed; single-ABI uncompressed
+        # still lands at ~37 MB, over the 30 MB cap).
         run: |
           cd android
-          ./gradlew :app:assembleRelease --no-daemon -Pexpo.inlineModules.watchedDirectories='[]' -PreactNativeArchitectures=arm64-v8a
+          ./gradlew :app:assembleRelease --no-daemon -Pexpo.inlineModules.watchedDirectories='[]' -PreactNativeArchitectures=arm64-v8a -Pexpo.useLegacyPackaging=true
 
       - name: Verify APK
         run: |
@@ -103,10 +106,10 @@ jobs:
           echo "$BADGING" | grep -q "versionName='2.0.0'" || { echo "wrong versionName (want 2.0.0)" >&2; exit 1; }
           SIZE="$(stat -c%s "$APK")"
           echo "APK size: $SIZE bytes ($((SIZE / 1024 / 1024)) MB)"
-          if [ "$SIZE" -gt 31457280 ]; then echo "APK over 30 MB hard cap" >&2; exit 1; fi
-          if [ "$SIZE" -gt 26214400 ]; then echo "WARNING: APK over 25 MB target"; fi
           echo "Largest APK entries:"
           unzip -l "$APK" | sort -k1 -n -r | head -12
+          if [ "$SIZE" -gt 31457280 ]; then echo "APK over 30 MB hard cap" >&2; exit 1; fi
+          if [ "$SIZE" -gt 26214400 ]; then echo "WARNING: APK over 25 MB target"; fi
           cp "$APK" collect-v2.0.0.apk
           sha256sum collect-v2.0.0.apk
 
