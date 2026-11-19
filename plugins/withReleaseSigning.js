@@ -16,7 +16,7 @@ module.exports = function withReleaseSigning(config) {
       return config;
     }
     let gradle = config.modResults.contents;
-    if (!gradle.includes('signingConfigs')) {
+    if (!gradle.includes('signingConfigs.release')) {
       const signingBlock = [
         '    signingConfigs {',
         '        release {',
@@ -30,15 +30,29 @@ module.exports = function withReleaseSigning(config) {
         '',
       ].join('\n');
       gradle = gradle.replace(/(\n\s*)buildTypes\s*\{/, `$1${signingBlock}buildTypes {`);
-      // Attach the signing config inside the release build type.
-      const btIndex = gradle.indexOf('buildTypes {');
-      const relIndex = gradle.indexOf('release {', btIndex);
-      if (relIndex !== -1) {
-        const braceEnd = gradle.indexOf('\n', relIndex);
-        gradle =
-          gradle.slice(0, braceEnd + 1) +
-          '            signingConfig signingConfigs.release\n' +
-          gradle.slice(braceEnd + 1);
+      // The template's release build type points at signingConfigs.debug
+      // (with a "generate your own keystore" comment). Point it at the
+      // release config instead. NOTE: merely ADDING a
+      // `signingConfig signingConfigs.release` line does NOT work — the
+      // template's later `signingConfig signingConfigs.debug` line wins
+      // (last assignment wins), which silently debug-signs the release APK.
+      // So the debug line inside the release block must be REPLACED.
+      // The match is anchored on `buildTypes` because the injected
+      // signingConfigs block above also contains a `release {` line.
+      const releaseSigning = /(buildTypes\s*\{[\s\S]*?\n\s*release\s*\{[\s\S]*?)signingConfig signingConfigs\.debug/;
+      if (releaseSigning.test(gradle)) {
+        gradle = gradle.replace(releaseSigning, '$1signingConfig signingConfigs.release');
+      } else {
+        // Fallback: no debug line found in the release block; insert one.
+        const btIndex = gradle.indexOf('buildTypes {');
+        const relIndex = gradle.indexOf('release {', btIndex);
+        if (relIndex !== -1) {
+          const braceEnd = gradle.indexOf('\n', relIndex);
+          gradle =
+            gradle.slice(0, braceEnd + 1) +
+            '            signingConfig signingConfigs.release\n' +
+            gradle.slice(braceEnd + 1);
+        }
       }
       config.modResults.contents = gradle;
     }
