@@ -21,7 +21,7 @@
 
 ## 通过的验证
 
-以下命令均在 `feat/v2.1.0` 分支、当前工作区执行：
+本地与线上数据检查：
 
 | 命令 | 结果 |
 | --- | --- |
@@ -36,29 +36,44 @@
 | 线上增量请求头检查 | `/data/articles.json` 返回 `ETag`、`Last-Modified` |
 | 分享去重测试 | 同一事件只导航一次，新的相同内容分享事件可再次导航 |
 
-## 失败 / 未通过的验证
+GitHub Actions 云构建（run 44523810077）：
 
-| 项目 | 结果 | 处理 |
-| --- | --- | --- |
-| `node scripts/verify-assetlinks.mjs` | FAIL：`https://collect.tpgofighting.top/.well-known/assetlinks.json` HTTP 404 | 需要发布真实 release 签名指纹生成的校验文件 |
-| `https://collect.tpgofighting.top/article/chromium` | HTTP 404 | 需要 nginx 回退到 `index.html` 或站点增加等价路由 |
+| 步骤 | 结果 |
+| --- | --- |
+| Typecheck / Lint / 三组测试 | 全部通过 |
+| Decode release keystore / Expo prebuild / 签名配置 | 全部通过 |
+| Build release APK | 成功，产物 22,833,521 字节 |
+| Verify APK | 包名、versionCode 4、versionName 2.1.0、30 MB 限制全部通过 |
+| Verify APK signature | keystore 与 APK 指纹一致：`02:E2:4B:37:6E:1E:95:BD:1A:0F:95:F5:A5:9E:FF:A4:3B:1B:D7:6C:33:FC:6B:19:0D:DE:58:6E:3E:D4:D9:50` |
+| Upload APK artifact / Create GitHub Release | 成功，Release 包含 `collect-v2.1.0.apk` |
 
-以上为服务端现状，不是代码测试失败；未擅自修改生产配置。
+生产站点验证：
 
-## 环境受限项
+| 项目 | 结果 |
+| --- | --- |
+| `node scripts/verify-assetlinks.mjs <release_sha256>` | OK：线上文件存在，指纹与正式 release APK 一致，Content-Type 为 `application/json` |
+| `https://collect.tpgofighting.top/article/chromium` | HTTP 200 / `text/html`，已回退到首页客户端路由 |
+| `https://collect.tpgofighting.top/article/does-not-exist` | HTTP 200 / `text/html`，不存在的文章由 App 显示错误状态 |
+| `https://collect.tpgofighting.top/data/articles.json` | HTTP 200 / `application/json`，42 篇与种子一致 |
 
-- 本机缺少 JDK / Android SDK，无法构建 release APK，也无法用 `apksigner` 生成或验证签名指纹。
-- 没有 release keystore 与 CI secrets，未进行签名、部署或密钥相关高风险操作。
-- 没有 Android 设备或模拟器，以下行为只完成了静态配置、单元测试和 Manifest 检查，尚未做真机验证：
+## 仍受限的验证
+
+- 没有 Android 设备或模拟器，以下行为只完成了静态配置、云构建、单元测试和 Manifest 检查，尚未做真机验证：
   - 后台同步实际触发频率与省电策略表现；
   - 系统通知展示、权限变更与点击跳转；
   - 微信 / X / 浏览器冷启动、热启动分享；
-  - 已校验 App Links、返回栈与长图保存 / 系统分享。
+  - 已校验 App Links 的跳转、返回栈与长图保存 / 系统分享。
 - 当前站点没有服务端事件或 push API，后台可达性依赖系统调度，不能承诺实时提醒。
+- `/data/*` 未设置 `Cache-Control: no-cache`；App 使用小时级 cache-buster 兜底，不影响功能。
 
-## 未执行的操作
+## 已执行的部署操作
 
-- 没有提交或推送代码。
-- 没有修改生产 nginx 配置。
-- 没有部署 `assetlinks.json`。
-- 没有生成、导入或导出签名密钥。
+- 提交 `feat/v2.1.0` 并推送到 GitHub。
+- 推送 tag `v2.1.0`，由 GitHub Actions 完成云构建、签名和 Release 发布。
+- 在 ATP 生产服务器上备份并更新 `/etc/nginx/sites-enabled/collect`：
+  - 增加 `/.well-known/assetlinks.json` 精确 location；
+  - 增加 `^~ /article/` 到 `index.html` 的回退；
+  - `nginx -t` 通过后 `systemctl reload nginx`。
+  - 原配置备份在 `/etc/nginx/sites-available/collect.bak.20261119`。
+- 部署 `/var/www/collect/.well-known/assetlinks.json`，使用 CI 正式签名 APK 的证书指纹。
+- 没有生成、导入或导出签名密钥；签名全部在 GitHub Actions 中使用既有 secrets 完成。

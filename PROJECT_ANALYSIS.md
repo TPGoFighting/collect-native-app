@@ -25,7 +25,7 @@
 - `articles.json` 与单篇 JSON 是静态文件，由 `scripts/extract-data.mjs` 从线上页面生成，再由 `scripts/deploy-data.sh` rsync 到 ATP。
 - 线上列表当前返回 42 篇，与仓库种子完全一致；`ETag`、`Last-Modified` 与文章 `rev` 已存在。
 - 没有可直接调用的增量 API、用户体系、鉴权或 push 服务。因此 v2.1.0 没有伪造这些接口，而是使用 HTTP 条件请求 + `rev` 实现增量语义。
-- App Links 校验文件目前 404；`/article/<id>` 目前 404。两项都需要生产站点配置，属于明确的发布阻塞项。
+- App Links 校验文件已部署正式 release 证书指纹；`/article/<id>` 已配置浏览器回退，两项公网验证均通过。
 
 ## 发现与处理的问题
 

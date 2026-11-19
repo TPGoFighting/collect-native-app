@@ -28,8 +28,9 @@
 - 旧版 v1.x 使用 debug 签名，不能直接覆盖升级到 v2.1.0。
 - 本项目仅启用 Android；`expo-share-intent` 的 iOS 配置已显式关闭。
 
-### 已知环境限制
+### 发布状态
 
-- `https://collect.tpgofighting.top/.well-known/assetlinks.json` 当前返回 404，需发布使用真实 release 签名指纹的文件后，Android App Links 才会通过校验。
-- `https://collect.tpgofighting.top/article/<id>` 当前返回 404，需为网站配置回退到 `index.html` 或提供等价路由，以保证未安装 App 时的浏览器降级可用。
+- GitHub Actions 已产出并签名 `collect-v2.1.0.apk`，Release 已发布。
+- `https://collect.tpgofighting.top/.well-known/assetlinks.json` 已部署正式 release 证书指纹，线上校验通过。
+- `https://collect.tpgofighting.top/article/<id>` 已配置浏览器回退，未安装 App 时返回首页客户端路由。
 - 后台同步频率由 Android 系统省电策略决定，非实时推送；当前站点是静态 JSON，没有服务端事件推送能力。

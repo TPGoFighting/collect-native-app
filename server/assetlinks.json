@@ -1,11 +1,13 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "top.tpgofighting.collect",
       "sha256_cert_fingerprints": [
-        "REPLACE_WITH_RELEASE_CERT_SHA256_UPPERCASE_COLON_SEPARATED"
+        "02:E2:4B:37:6E:1E:95:BD:1A:0F:95:F5:A5:9E:FF:A4:3B:1B:D7:6C:33:FC:6B:19:0D:DE:58:6E:3E:D4:D9:50"
       ]
     }
   }

@@ -10,7 +10,14 @@ v2.1.0 完成增量同步、新文章本地通知、系统分享入口、App Lin
 CI：`.github/workflows/build.yml`，push main 或 tag `v*` 后构建 release APK。
 流程为 `npm ci` → 测试 → `expo prebuild --platform android` → `gradlew assembleRelease`；不使用 EAS Build。
 
-本地构建：
+已使用 tag `v2.1.0` 触发 GitHub Actions 云构建并成功产出正式签名 APK：
+
+- 构建运行：https://github.com/TPGoFighting/collect-native-app/actions/runs/44523810077
+- GitHub Release：https://github.com/TPGoFighting/collect-native-app/releases/tag/v2.1.0
+- 产物：`collect-v2.1.0.apk`（22,833,521 字节）
+- APK 校验：包名 `top.tpgofighting.collect`、versionCode 4、versionName 2.1.0、签名校验通过。
+
+本地构建不是发布前置条件；若本机具备 JDK 与 Android SDK，可运行：
 
 ```bash
 npm ci
@@ -22,43 +29,34 @@ npx expo prebuild --platform android --non-interactive
 cd android && ./gradlew assembleRelease
 ```
 
-本地环境需要 JDK 与 Android SDK。当前开发机没有完整 Android 构建环境，无法在本机产出或验证 release APK。
-
 ## 签名要求
 
 - Android 包名：`top.tpgofighting.collect`。
 - versionCode：4；versionName：2.1.0。
+- release 证书 SHA-256：`02:E2:4B:37:6E:1E:95:BD:1A:0F:95:F5:A5:9E:FF:A4:3B:1B:D7:6C:33:FC:6B:19:0D:DE:58:6E:3E:D4:D9:50`。
 - CI secrets：`ANDROID_KEYSTORE_BASE64`、`ANDROID_KEYSTORE_PASSWORD`、`ANDROID_KEY_ALIAS`、`ANDROID_KEY_PASSWORD`。
-- 不得把 keystore、密码或签名指纹硬编码进仓库。
+- 证书公钥指纹不是私钥或签名文件，已写入仓库中的 `server/assetlinks.json` 供域名校验。
 - 旧版 v1.x 是 debug 签名，不能直接覆盖升级；从 v2.0.0 起使用正式 release 签名，v2.x 用户可直接覆盖升级。
 
-## 服务端变更清单（发布前必须完成）
+## 服务端变更状态
 
-1. 生成 App Links 校验文件：
-   - 用正式 release APK 计算证书指纹。`apksigner verify --print-certs app-release.apk` 输出的
-     SHA-256 指纹用于生成 `server/assetlinks.json`。
-   - 可运行 `ANDROID_HOME=/path/to/sdk bash scripts/make-assetlinks.sh path/to/app-release.apk`；
-     不要部署占位符 `REPLACE_WITH_RELEASE_CERT_SHA256_UPPERCASE_COLON_SEPARATED`。
-2. 将生成的 `server/assetlinks.json` 部署到：
+1. App Links 校验文件已部署：
    `https://collect.tpgofighting.top/.well-known/assetlinks.json`
-   - Content-Type 必须是 `application/json`，内容必须可由公网匿名访问。
-   - 当前实测：HTTP 404，App Links 尚未通过域名校验。
-   - 验证命令：`node scripts/verify-assetlinks.mjs <release_sha256>`。
-3. 为 App Link 路径配置浏览器回退：
-   - `https://collect.tpgofighting.top/article/<id>` 当前实测 HTTP 404。
-   - nginx 应将 `/article/*` 回退到 `index.html`，或站点增加等价路由，避免未安装 App 时浏览器报错。
-4. 可选缓存优化：按现有设计为 `/data/*` 设置 `Cache-Control: no-cache`；未配置时 App 使用
-   `articles.json?v=<小时>` 作为兜底。
-5. 数据发布：使用 `bash scripts/deploy-data.sh` 从线上站点抽取并部署；脚本会在发布后检查
+   - Content-Type：`application/json`。
+   - 指纹来自 CI 正式签名 APK，并通过 `node scripts/verify-assetlinks.mjs <release_sha256>` 校验。
+2. `/article/<id>` 浏览器回退已配置：
+   - nginx 将 `/article/*` 回退到 `index.html`。
+   - 实测 `https://collect.tpgofighting.top/article/chromium` 返回 200 / `text/html`。
+3. `/data/*` 目前未设置 `Cache-Control: no-cache`；App 使用 `articles.json?v=<小时>` 兜底，不影响发布。
+4. 数据发布继续使用 `bash scripts/deploy-data.sh`；脚本会在发布后检查
    `assetlinks.json` 是否生效。部署后请提交刷新过的 `assets/seed-data`。
 
 ## 安装与验证
 
-- 通过 CI artifact 获取 `collect-v2.1.0.apk`，使用 release 签名安装。
+- 从 GitHub Release 下载 `collect-v2.1.0.apk` 安装。
 - 验证覆盖升级：从 v2.0.0 安装 v2.1.0。
 - 验证分享：微信 / X / 浏览器分享链接到 Collect，确认推荐页预填、重复分享不重复导航。
-- 验证 App Links：在域名校验文件部署后，点击
-  `https://collect.tpgofighting.top/article/chromium`，确认进入阅读页；冷启动、热启动和返回栈各测一次。
+- 验证 App Links：点击 `https://collect.tpgofighting.top/article/chromium`，确认进入阅读页；冷启动、热启动和返回栈各测一次。
 - 验证通知：授予权限后等待新文章发现，确认通知只响一次，点击后进入对应文章；拒绝权限不应消耗提醒资格。
 - 验证分享卡片：阅读页打开图片分享，确认预览、保存相册和系统分享正常。
 
@@ -66,5 +64,5 @@ cd android && ./gradlew assembleRelease
 
 - 后台同步遵循 Android 系统省电策略，不是实时推送。
 - 当前服务端是静态 JSON，没有真正的增量 API 或 push 服务；增量判断依赖 ETag / Last-Modified 与文章 `rev`。
-- 当前环境没有 Android SDK、签名密钥、设备或模拟器，真机层面的后台任务、通知、分享和 App Links 行为尚未验证。
+- GitHub Actions 已验证构建、打包和签名；当前环境没有 Android 设备或模拟器，真机层面的后台任务、通知、分享、App Links 跳转与图片保存仍需安装 APK 后验证。
 - 发布之后若 App Links 仍无法打开，先用 `node scripts/verify-assetlinks.mjs` 确认线上校验文件，再检查 APK 签名是否与文件指纹一致。
