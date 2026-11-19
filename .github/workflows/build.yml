@@ -65,12 +65,14 @@ jobs:
           grep -n "watchedDirectories" android/gradle.properties
           cat > /tmp/wd-debug.gradle <<'EOF'
           allprojects {
-            def v = findProperty("expo.inlineModules.watchedDirectories")
-            println("WD-DEBUG project=" + project.path + " value=[" + v + "] class=" + (v == null ? "null" : v.getClass().name))
+            afterEvaluate {
+              tasks.findByName("generateInlineModules")?.with {
+                println("WD-TASK project=" + project.path + " watchedDirectoriesSerialized=[" + watchedDirectoriesSerialized.get() + "]")
+              }
+            }
           }
           EOF
-          cd android && ./gradlew -I /tmp/wd-debug.gradle help 2>&1 | grep -E "WD-DEBUG|BUILD" | head -20
-          cd android && ./gradlew :expo:generateInlineModules --info 2>&1 | grep -E "watched-directories-serialized|Starting process" | head -5
+          (cd android && ./gradlew -I /tmp/wd-debug.gradle help 2>&1 | grep -E "WD-TASK|BUILD" | head -10)
 
       - name: Write gradle.properties (signing)
         env:
