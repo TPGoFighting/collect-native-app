@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "node scripts/test-offline.mjs",
     "test:v210": "node scripts/test-v210.mjs",
-    "test:unit": "jest --runInBand"
+    "test:unit": "jest --runInBand",
+    "test:release-crash": "node __tests__/release-crash-regression.test.cjs"
   },
   "dependencies": {
     "@expo/ui": "~58.0.29",

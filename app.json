@@ -69,7 +69,8 @@
           "androidIntentFilters": ["text/*"],
           "disableIOS": true
         }
-      ]
+      ],
+      "./plugins/withWorkManagerKeepRules.js"
     ],
     "experiments": {
       "typedRoutes": true

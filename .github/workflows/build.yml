@@ -55,6 +55,7 @@ jobs:
           npm test
           npm run test:v210
           npm run test:unit
+          npm run test:release-crash
 
       - name: Decode release keystore
         env:
