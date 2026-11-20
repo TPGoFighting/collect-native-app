@@ -89,7 +89,7 @@ export default function ProfileScreen() {
     { icon: <Settings2 size={20} color={theme.text} />, label: '阅读设置', sub: '字号 / 行距 / 主题', onPress: () => router.push('/settings') },
     { icon: <Bell size={20} color={theme.text} />, label: '新文章通知', sub: '后台同步 / 通知偏好', onPress: () => router.push('/notifications') },
     { icon: <Link2 size={20} color={theme.text} />, label: '推荐文章', sub: '把想收录的链接存下来', onPress: () => router.push('/recommend') },
-    { icon: <History size={20} color={theme.text} />, label: '阅读历史', onPress: () => router.push('/history') },
+    { icon: <History size={20} color={theme.text} />, label: '阅读历史', onPress: () => router.push({ pathname: '/(tabs)/favorites', params: { tab: 'history' } }) },
     { icon: <BookMarked size={20} color={theme.text} />, label: '我的收藏', onPress: () => router.push('/(tabs)/favorites') },
     { icon: <Save size={20} color={theme.text} />, label: '备份与恢复', sub: '导出 / 导入收藏和历史', onPress: onBackup },
     { icon: <Trash2 size={20} color={theme.text} />, label: '清除缓存', sub: cacheSize !== null ? `图片缓存 ${formatBytes(cacheSize)}` : undefined, onPress: onClearCache },

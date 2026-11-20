@@ -1,43 +1,16 @@
-import { useCallback, useState } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { ArrowLeft, Trash2 } from 'lucide-react-native';
-import type { ArticleMeta } from '@/lib/types';
 import { useSettings } from '@/lib/theme';
-import { clearHistory, getReadMap, listHistory } from '@/lib/db';
-import { ArticleCard } from '@/components/ArticleCard';
-import { StateView } from '@/components/StateView';
+import { HistoryList, confirmClearHistory } from '@/components/HistoryList';
 
 export default function HistoryScreen() {
   const { theme } = useSettings();
   const router = useRouter();
-  const [items, setItems] = useState<ArticleMeta[]>([]);
-  const [readIds, setReadIds] = useState<Set<string>>(new Set());
-
-  const reload = useCallback(() => {
-    setItems(listHistory());
-    setReadIds(getReadMap());
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      reload();
-    }, [reload]),
-  );
 
   const onClear = () => {
-    Alert.alert('清除阅读历史', '确定要清除全部阅读历史吗？收藏不受影响。', [
-      { text: '取消', style: 'cancel' },
-      {
-        text: '清除',
-        style: 'destructive',
-        onPress: () => {
-          clearHistory();
-          reload();
-        },
-      },
-    ]);
+    confirmClearHistory();
   };
 
   return (
@@ -51,19 +24,7 @@ export default function HistoryScreen() {
           <Trash2 size={20} color={theme.textSecondary} />
         </Pressable>
       </View>
-      <FlatList
-        data={items}
-        keyExtractor={(a) => a.id}
-        renderItem={({ item }) => (
-          <ArticleCard
-            article={item}
-            isRead={readIds.has(item.id)}
-            onPress={() => router.push(`/article/${item.id}`)}
-          />
-        )}
-        ListEmptyComponent={<StateView title="还没有阅读记录" detail="打开任意文章后，这里会留下记录。" />}
-        contentContainerStyle={styles.listContent}
-      />
+      <HistoryList contentContainerStyle={styles.listContent} />
     </SafeAreaView>
   );
 }

@@ -1,11 +1,12 @@
 import { useCallback, useState } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
 import { Trash2 } from 'lucide-react-native';
 import type { ArticleMeta } from '@/lib/types';
 import { useSettings } from '@/lib/theme';
-import { clearHistory, getReadMap, listFavorites, listHistory } from '@/lib/db';
+import { getReadMap, listFavorites, listHistory } from '@/lib/db';
+import { HistoryList, confirmClearHistory } from '@/components/HistoryList';
 import { ArticleCard } from '@/components/ArticleCard';
 import { StateView } from '@/components/StateView';
 
@@ -14,12 +15,24 @@ type Tab = 'fav' | 'history';
 export default function FavoritesScreen() {
   const { theme } = useSettings();
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>('fav');
+  const { tab: tabParam } = useLocalSearchParams<{ tab?: string }>();
+  const requestedTab = tabParam === 'history' ? 'history' : 'fav';
+  const [tab, setTab] = useState<Tab>(requestedTab);
   const [items, setItems] = useState<ArticleMeta[]>([]);
+  const [historyCount, setHistoryCount] = useState(0);
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const [historyRev, setHistoryRev] = useState(0); // bumps to refresh HistoryList
+
+  // Deep link (e.g. profile row) may arrive after mount: follow the param.
+  const [lastParam, setLastParam] = useState<Tab>(requestedTab);
+  if (requestedTab !== lastParam) {
+    setLastParam(requestedTab);
+    setTab(requestedTab);
+  }
 
   const reload = useCallback(() => {
     setItems(tab === 'fav' ? listFavorites() : listHistory());
+    setHistoryCount(listHistory().length);
     setReadIds(getReadMap());
   }, [tab]);
 
@@ -30,24 +43,17 @@ export default function FavoritesScreen() {
   );
 
   const onClearHistory = () => {
-    Alert.alert('清除阅读历史', '确定要清除全部阅读历史吗？收藏不受影响。', [
-      { text: '取消', style: 'cancel' },
-      {
-        text: '清除',
-        style: 'destructive',
-        onPress: () => {
-          clearHistory();
-          reload();
-        },
-      },
-    ]);
+    confirmClearHistory(() => {
+      reload();
+      setHistoryRev((n) => n + 1);
+    });
   };
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.bg }]} edges={['top']}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>收藏</Text>
-        {tab === 'history' && items.length > 0 ? (
+        {tab === 'history' && historyCount > 0 ? (
           <Pressable onPress={onClearHistory} hitSlop={10} style={styles.clearBtn} accessibilityRole="button" accessibilityLabel="清除历史">
             <Trash2 size={18} color={theme.textSecondary} />
           </Pressable>
@@ -76,24 +82,25 @@ export default function FavoritesScreen() {
           </Pressable>
         ))}
       </View>
-      <FlatList
-        data={items}
-        keyExtractor={(a) => a.id}
-        renderItem={({ item }) => (
-          <ArticleCard
-            article={item}
-            isRead={readIds.has(item.id)}
-            onPress={() => router.push(`/article/${item.id}`)}
-          />
-        )}
-        ListEmptyComponent={
-          <StateView
-            title={tab === 'fav' ? '还没有收藏' : '还没有阅读记录'}
-            detail={tab === 'fav' ? '在文章页点右上角书签即可收藏。' : undefined}
-          />
-        }
-        contentContainerStyle={styles.listContent}
-      />
+      {tab === 'history' ? (
+        <HistoryList contentContainerStyle={styles.listContent} reloadKey={historyRev} />
+      ) : (
+        <FlatList
+          data={items}
+          keyExtractor={(a) => a.id}
+          renderItem={({ item }) => (
+            <ArticleCard
+              article={item}
+              isRead={readIds.has(item.id)}
+              onPress={() => router.push(`/article/${item.id}`)}
+            />
+          )}
+          ListEmptyComponent={
+            <StateView title="还没有收藏" detail="在文章页点右上角书签即可收藏。" />
+          }
+          contentContainerStyle={styles.listContent}
+        />
+      )}
     </SafeAreaView>
   );
 }

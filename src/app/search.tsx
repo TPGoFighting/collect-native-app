@@ -3,17 +3,34 @@ import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { ArrowLeft, Search as SearchIcon, X } from 'lucide-react-native';
-import type { ArticleMeta } from '@/lib/types';
+import type { ArticleSearchHit } from '@/lib/db';
 import { useSettings } from '@/lib/theme';
-import { addSearchHistory, getReadMap, getSearchHistory, listArticles } from '@/lib/db';
+import { addSearchHistory, getReadMap, getSearchHistory, searchArticles } from '@/lib/db';
 import { ArticleCard } from '@/components/ArticleCard';
 import { StateView } from '@/components/StateView';
+
+/** Body-hit context snippet with the keyword range emphasized in accent color. */
+function SnippetLine({ hit }: { hit: ArticleSearchHit }) {
+  const { theme } = useSettings();
+  const snippet = hit.snippet;
+  if (!snippet) return null;
+  const before = snippet.text.slice(0, snippet.matchStart);
+  const match = snippet.text.slice(snippet.matchStart, snippet.matchEnd);
+  const after = snippet.text.slice(snippet.matchEnd);
+  return (
+    <Text style={[styles.snippet, { color: theme.textSecondary }]} numberOfLines={2}>
+      {before}
+      <Text style={{ color: theme.text, fontWeight: '700' }}>{match}</Text>
+      {after}
+    </Text>
+  );
+}
 
 export default function SearchScreen() {
   const { theme } = useSettings();
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<ArticleMeta[]>([]);
+  const [results, setResults] = useState<ArticleSearchHit[]>([]);
   const [history, setHistory] = useState<string[]>([]);
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -29,7 +46,7 @@ export default function SearchScreen() {
     if (timer.current) clearTimeout(timer.current);
     const q = query.trim();
     timer.current = setTimeout(() => {
-      setResults(q ? listArticles({ query: q }) : []);
+      setResults(q ? searchArticles(q) : []);
     }, 250);
     return () => {
       if (timer.current) clearTimeout(timer.current);
@@ -41,7 +58,7 @@ export default function SearchScreen() {
     if (!text) return;
     addSearchHistory(text);
     setHistory(getSearchHistory());
-    setResults(listArticles({ query: text }));
+    setResults(searchArticles(text));
   };
 
   const openArticle = (id: string) => router.push(`/article/${id}`);
@@ -56,7 +73,7 @@ export default function SearchScreen() {
           value={query}
           onChangeText={setQuery}
           onSubmitEditing={() => submit(query)}
-          placeholder="搜索标题、作者、关键词…"
+          placeholder="搜索标题、作者、正文…"
           placeholderTextColor={theme.textSecondary}
           style={[styles.input, { color: theme.text }]}
           autoFocus
@@ -94,15 +111,26 @@ export default function SearchScreen() {
             </View>
           )}
           <Text style={[styles.hint, { color: theme.textSecondary, marginTop: 24 }]}>
-            搜索范围：标题、作者、摘要、关键词
+            搜索范围：标题、作者、摘要、关键词、正文
           </Text>
         </View>
       ) : (
         <FlatList
           data={results}
-          keyExtractor={(a) => a.id}
+          keyExtractor={(h) => h.meta.id}
           renderItem={({ item }) => (
-            <ArticleCard article={item} isRead={readIds.has(item.id)} onPress={() => openArticle(item.id)} />
+            <View>
+              <ArticleCard
+                article={item.meta}
+                isRead={readIds.has(item.meta.id)}
+                onPress={() => openArticle(item.meta.id)}
+              />
+              {item.snippet ? (
+                <View style={styles.snippetWrap}>
+                  <SnippetLine hit={item} />
+                </View>
+              ) : null}
+            </View>
           )}
           ListEmptyComponent={
             <StateView title={query ? '没有找到相关文章' : '搜索文章'} detail={query ? '换个关键词，或从首页平台筛选中浏览。' : '输入标题、作者或关键词开始搜索。'} />
@@ -140,5 +168,7 @@ const styles = StyleSheet.create({
   chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 },
   chipText: { fontSize: 14 },
   count: { fontSize: 13, paddingHorizontal: 16, paddingVertical: 10 },
+  snippetWrap: { marginTop: -6, paddingHorizontal: 30, marginBottom: 12 },
+  snippet: { fontSize: 12, lineHeight: 17 },
   listContent: { paddingBottom: 24 },
 });

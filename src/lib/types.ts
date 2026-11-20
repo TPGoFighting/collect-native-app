@@ -42,6 +42,13 @@ export interface Article extends ArticleMeta {
   sections: Section[];
 }
 
+/** Context snippet for full-text search hits (match range is inside `text`). */
+export interface SearchSnippet {
+  text: string;
+  matchStart: number;
+  matchEnd: number;
+}
+
 export interface ArticlesList {
   schema_version: number;
   updated_at: string;

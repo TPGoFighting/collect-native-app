@@ -6,7 +6,7 @@ import { Search, WifiOff, X } from 'lucide-react-native';
 import type { ArticleMeta } from '@/lib/types';
 import { useSettings } from '@/lib/theme';
 import type { UnfinishedArticle } from '@/lib/db';
-import { getReadMap, listArticles, listUnfinished } from '@/lib/db';
+import { countArticles, getReadMap, listArticles, listUnfinished } from '@/lib/db';
 import { lastSyncAt, lastSyncError, syncNow } from '@/lib/sync';
 import { ArticleCard } from '@/components/ArticleCard';
 import { PlatformChips } from '@/components/PlatformChips';
@@ -36,6 +36,7 @@ export default function HomeScreen() {
   const [syncIssue, setSyncIssue] = useState<string | null>(null);
   const [lastSync, setLastSync] = useState<string | null>(null);
   const [unfinished, setUnfinished] = useState<UnfinishedArticle | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
   const knownCount = useRef(0);
 
   const reload = useCallback(() => {
@@ -45,7 +46,9 @@ export default function HomeScreen() {
     setUnfinished(listUnfinished()[0] ?? null);
     setLastSync(lastSyncAt());
     setSyncIssue(lastSyncError());
-    if (knownCount.current === 0) knownCount.current = listArticles().length;
+    const total = countArticles();
+    setTotalCount(total);
+    knownCount.current = total;
   }, [platform]);
 
   useFocusEffect(
@@ -69,7 +72,7 @@ export default function HomeScreen() {
       if (gained > 0 && before > 0) setNewCount(gained);
     }
     reload();
-    knownCount.current = listArticles().length;
+    knownCount.current = countArticles();
   }, [reload]);
 
   const sections = useMemo(() => {
@@ -93,7 +96,7 @@ export default function HomeScreen() {
         <View>
           <Text style={[styles.title, { color: theme.text }]}>Collect</Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-            {articles.length > 0 ? `已收录 ${listArticles().length} 篇` : '正在加载…'}
+            {articles.length > 0 ? `已收录 ${totalCount} 篇` : '正在加载…'}
           </Text>
         </View>
         <Pressable
