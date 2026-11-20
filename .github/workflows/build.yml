@@ -110,16 +110,16 @@ jobs:
           BADGING="$("$AAPT" dump badging "$APK")"
           echo "$BADGING" | grep -E "package:|launchable-activity"
           echo "$BADGING" | grep -q "name='top.tpgofighting.collect'" || { echo "wrong package name" >&2; exit 1; }
-          echo "$BADGING" | grep -q "versionCode='5'" || { echo "wrong versionCode (want 5)" >&2; exit 1; }
-          echo "$BADGING" | grep -q "versionName='2.1.1'" || { echo "wrong versionName (want 2.1.1)" >&2; exit 1; }
+          echo "$BADGING" | grep -q "versionCode='6'" || { echo "wrong versionCode (want 6)" >&2; exit 1; }
+          echo "$BADGING" | grep -q "versionName='2.1.2'" || { echo "wrong versionName (want 2.1.2)" >&2; exit 1; }
           SIZE="$(stat -c%s "$APK")"
           echo "APK size: $SIZE bytes ($((SIZE / 1024 / 1024)) MB)"
           echo "Largest APK entries:"
           unzip -l "$APK" | sort -k1 -n -r | head -12
           if [ "$SIZE" -gt 31457280 ]; then echo "APK over 30 MB hard cap" >&2; exit 1; fi
           if [ "$SIZE" -gt 26214400 ]; then echo "WARNING: APK over 25 MB target"; fi
-          cp "$APK" collect-v2.1.1.apk
-          sha256sum collect-v2.1.1.apk
+          cp "$APK" collect-v2.1.2.apk
+          sha256sum collect-v2.1.2.apk
 
       - name: Verify APK signature (release keystore)
         env:
@@ -128,9 +128,9 @@ jobs:
         run: |
           APKSIGNER="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)"
           echo "apksigner: $APKSIGNER"
-          "$APKSIGNER" verify collect-v2.1.1.apk || { echo "apksigner verify FAILED" >&2; exit 1; }
+          "$APKSIGNER" verify collect-v2.1.2.apk || { echo "apksigner verify FAILED" >&2; exit 1; }
           KEY_FP="$(keytool -list -v -keystore collect-release.p12 -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" 2>/dev/null | grep -i "SHA256:" | awk '{print $2}' | tr -d ':' | tr 'A-Z' 'a-z')"
-          APK_FP="$("$APKSIGNER" verify --print-certs collect-v2.1.1.apk 2>/dev/null | grep -i "SHA-256" | head -1 | awk '{print $NF}' | tr 'A-Z' 'a-z')"
+          APK_FP="$("$APKSIGNER" verify --print-certs collect-v2.1.2.apk 2>/dev/null | grep -i "SHA-256" | head -1 | awk '{print $NF}' | tr 'A-Z' 'a-z')"
           echo "keystore cert SHA-256: $KEY_FP"
           echo "apk cert SHA-256:      $APK_FP"
           if [ -z "$KEY_FP" ] || [ "$KEY_FP" != "$APK_FP" ]; then
@@ -143,16 +143,16 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: collect-v2.1.1
-          path: collect-v2.1.1.apk
+          path: collect-v2.1.2.apk
           if-no-files-found: error
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: collect-v2.1.1.apk
+          files: collect-v2.1.2.apk
           body: |
-            Collect 原生安卓版 v2.1.1 — 离线可读的口袋阅读器。
+            Collect 原生安卓版 v2.1.2 — 离线可读的口袋阅读器。
 
             **升级说明：**
             v2.0.0/v2.1.0 用户可直接覆盖升级到 v2.1.1（release 签名一致）。v1.x 是 debug 签名，需要先卸载。升级后建议在「我的 → 备份与恢复」导出一次数据。
