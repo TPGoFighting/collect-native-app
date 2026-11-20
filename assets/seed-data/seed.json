@@ -1,8 +1,1627 @@
 {
  "schema_version": 1,
- "updated_at": "2026-11-19T05:42:02.085Z",
- "count": 42,
+ "updated_at": "2026-11-20T05:19:05.987Z",
+ "count": 53,
  "articles": [
+  {
+   "id": "shaoreview",
+   "title": "Claude Code 团队是怎么做 code review 的？——分层检查后，合并 PR 翻倍、回滚降超 40%",
+   "author": "meng shao @shao__meng",
+   "handle": "shao__meng",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-20",
+   "mins": 11,
+   "cover": "https://collect.tpgofighting.top/assets/covers/shaoreview.webp",
+   "coverAlt": "Claude Code 团队 code review 分层检查收录封面",
+   "summary": "完整长文版：转述 Claude Dev 内部实践——约 90% 代码由 Claude 写，七层挡板（提交前验证、CI、AI 审查、安全审查、按风险批准、合并队列与功能开关、快速回滚）如何让合入 PR 翻倍、回滚降超 40%，附 CLAUDE.md / REVIEW.md 分工、AI 审查 16%→54% 与收敛改动数据（平均轮次 2.08→1.32）。与 Addy Osmani 的验证方法论篇同源对照。",
+   "keywords": [
+    "claude",
+    "code",
+    "code",
+    "review",
+    "pr",
+    "回滚",
+    "ai",
+    "审查",
+    "claude.md",
+    "review.md",
+    "addy",
+    "osmani",
+    "shao",
+    "meng",
+    "分层检查"
+   ],
+   "url": "https://x.com/shao__meng/article/2123576742464073745",
+   "stats": null,
+   "sourceNote": "来源：X · meng shao @shao__meng，2026-11-20，转述 Claude Dev 10 月发布的内部实践分享（原作者 Addy Osmani、Morgan Westlee Lunt、Qing Wang）。发现路径：每日监控轮换扫到 @shao__meng，2026-11-20 收录。本页为结构化中文转述，保留七层检查、AI 审查数据与收敛改动前后对照，观点归原作者。",
+   "related": [
+    "addy",
+    "wqulint",
+    "hf"
+   ],
+   "relatedNote": "互推：Addy Osmani 那篇讲 Claude Code 团队如何思考验证，与本篇同源（本篇转述的原作者之一正是 Addy Osmani）；WquGuru 拆解 @poteto 的 Lint 工程哲学与本篇同属「怎么管住 Agent 写的代码」；HyperFrames 的 harness 篇讲脚手架如何胜过 Claude Code。",
+   "rev": "94fdc4af34ae",
+   "sections": [
+    {
+     "type": "paragraph",
+     "lead": true,
+     "text": "Claude Code 自己的代码约 90% 是 Claude 写的。改动量上来以后，逐行人工审查做不完了——但审查没有取消，而是被拆成一层层挡板：2026 年 6–9 月，合入 Claude Code 代码库的 PR 翻了一倍以上，需要回滚的比例却下降了超过 40%。这篇转述拆解这套分层检查：大部分阅读交给机器，人的注意力留给更高层的问题，出错之后也要能很快撤回去。"
+    },
+    {
+     "type": "heading",
+     "level": 3,
+     "text": "先看全貌：审查是两件事，本文讲第一件"
+    },
+    {
+     "type": "paragraph",
+     "text": "代码审查被看成两件事：一是在上线前找出并修好问题，二是在团队里建立对代码库的共同理解。本文主要讲第一件。只问「有没有人读过这段代码」不够精确，更值得问的是：这次改动可能出什么问题，该由哪一层检查来拦。审查也不再停在写完、开 PR、等同事看这一道关上，它更接近写字时的拼写检查——一边写一边进行，大多数改动在请人看之前，至少已经被 Claude 审查并修复过一次。同期 Anthropic 的 monorepo 里每天合入的改动从 5 月约 2,500 个增加到 9 月的 3 万个以上。"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**约 90%** — Claude Code 自己的代码由 Claude 写",
+      "**翻倍+** — 2026 年 6–9 月合入 PR 数量增长",
+      "**-40%+** — 同期需要回滚的 PR 比例下降",
+      "**2,500 → 3 万+** — Anthropic monorepo 每天合入改动（5 月 → 9 月）"
+     ]
+    },
+    {
+     "type": "image",
+     "url": "https://collect.tpgofighting.top/assets/images/shaoreview-1.webp",
+     "caption": "封面 · 本页设计封面（黑白版）：大字标题「Claude Code 团队是怎么做 code review 的？」，呼应原文的分层检查主题。原文为 X Article 长文，配图 7 张（多层检查流程图、分层挡板示意图等）。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "七层挡板：一次改动要过哪些检查"
+    },
+    {
+     "type": "paragraph",
+     "text": "一次典型改动从工程师的笔记本或 Slack 里的一次 Claude 会话出发，会经过多层检查；只有「按风险批准」这一步需要人来决定，其余大多是自动的。这套检查被比成一层层挡板，每层都能拦住一些问题、也会漏掉另一些，很少有问题能穿过全部层，漏下去的由快速回滚来接。从上到下是：**提交前验证、必过的 CI、AI 审查、安全审查、人工批准、合并队列和功能开关**，最底下是快速回滚。"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**人的时间要覆盖两边成本**——花在看代码上的时间，以及坏代码造成问题后花在修复上的时间；前面省下来的如果只是转到后面去修事故，就不算真的省下时间。",
+      "**目标**——大多数 PR 最多只需要一个人经手（可以是作者本人），同时回滚和事故不能增加。衡量用每次 PR 的人工批准数、人工评论与等待时长；回滚率和事故率是护栏。"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "提交前验证与 AI 审查"
+    },
+    {
+     "type": "paragraph",
+     "text": "**提交前验证**：大多数审查现在发生在 PR 出现之前。给 Claude 一些能实际跑起来的东西——测试、构建或一张用来和设计稿对比的截图——并要求它出示输出，不能只说做完了；然后让一个子 agent 带着全新上下文再看一遍 diff。Claude Code 的作者 Boris Cherny 说过，给 Claude 一种验证自己工作的方法，大概是做出好结果最重要的一件事，他估计这能让最终结果好上两到三倍。如果自动审查员反复指出同一类问题，他们会从源头改 skill、lint 规则或说明文件：**CLAUDE.md** 写得很短（每次审查都会加载），说明技术栈、约定、目标和明确不做的事；**REVIEW.md** 由代码负责人写，说明自己负责的那部分里什么才重要——失败长什么样、限制吹毛求疵，并要求用文件和行号做证据。"
+    },
+    {
+     "type": "paragraph",
+     "text": "**每个 PR 先过一遍 AI 审查**：对照整个仓库和这条 PR 声称的意图来读 diff。对外的产品是 Code Review for Claude Code，已在 Team 和 Enterprise 方案里正式提供；本地可以用 /code-review 跑更轻的版本。研究预览上线时，内部 PR 中收到实质性审查意见的比例从 **16% 升到 54%**；超过 1,000 行的 PR 大多会有发现，小的大多干净通过。发现在给人看之前会先经过其他 agent 核实：几组 agent 同时找 bug，另有一组投票，同意的人够多才会发出来；留下来的按严重程度排序、做成行内评论，并标上 Important、Nit 或 Pre-existing；每条发现都必须回应——修好，或在线程里写明原因后关闭。"
+    },
+    {
+     "type": "paragraph",
+     "text": "**安全审查和必过的自动检查**：安全审查是单独一轮，发现还开着就不能合并。同样的能力可以用开源 GitHub Action 或 /security-review 命令来搭。常规检查还有 lint、类型检查、各平台测试和构建；一个典型的 CLI PR 在有人看之前可能已经跑过几十项检查。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "按风险来的人工批准"
+    },
+    {
+     "type": "paragraph",
+     "text": "改文档和改自动更新器风险不一样，审查也不一样。档位按这次改动来定，不按是谁提交的来定：一个分类器先给出风险档，第二个再问——即便档位显示不用人，这次是不是仍要再找一个人。有些路径始终要人看，包括负责人标为敏感的路径以及任何 CI 工作流文件；只有仓库受信任名单上的作者才能走更轻的批准路径。**Agent 的批准不能充抵人所占的名额**；谁在指挥这次改动，谁就要为它负责——由 agent 写的 PR，指挥这个 agent 的人算作一名必需的审查者；一次批准只覆盖一个具体的 commit，新提交要重新批准。"
+    },
+    {
+     "type": "paragraph",
+     "text": "**合并之后**：合并队列会在最新的 main 上再跑一遍全部检查，避免两条单独都能通过的 PR 合在一起却弄坏主干。新行为通常先用功能开关发给 Anthropic 员工，对外先发到 latest 通道，stable 通道再晚一些；功能开关不用重新部署就能关掉。他们还没有在回滚与事故数字上升时自动收紧批准的熔断机制——里面的工程师希望先有这套机制，再把更多代码放到无人批准就能合入的路径上。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "怎样把审查员越做越准"
+    },
+    {
+     "type": "paragraph",
+     "text": "把过去导致事故的 PR，连同向前修复和回滚收成一组案例，再请熟悉那段代码的工程师确认每个 bug 以及它出现在哪里；审查员每天都在这组案例上跑一遍；评测集随着每一起事故变大，审查员的提示词、工具或模型一有改动就拿全部案例重新打分，分涨了就留下，没涨就丢掉。噪音用人们怎么处理这些评论来衡量：修好了、说它错了、说这是有意的行为，或觉得无关紧要。写下来的优先级是**先抓住真正的 bug，其次再减少审查轮次**。"
+    },
+    {
+     "type": "paragraph",
+     "text": "**审查必须收敛**：一个 agent 作者和一个 agent 审查员可能没完没了地互相打转——有一条 CLI 的 PR 隔夜经历了五十多轮审查和修复。他们对审查员反复指出的内容做了 git blame，大约 **59%** 在第一轮时就已经在代码里了。团队后来改了复审方式：三轮之后审查员会请作者停下来重新考虑做法；前几轮之后的复审只看新的 diff；标出的是这一类 bug，好让作者修掉所有实例；已经发过的发现不再重复提出。"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**65% → 78%** — 一轮审查和修复就能通过的内部 PR 占比",
+      "**8.9% → 1.5%** — 需要五轮或更多审查的 PR 占比",
+      "**2.08 → 1.32** — 通过前的平均审查轮次"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "人还要盯住什么，共同理解从哪里来"
+    },
+    {
+     "type": "paragraph",
+     "text": "人仍然要负责：决定该不该做（方向、品味和范围）；审查计费、自动更新器、CI 工作流这类高风险代码；审查会成为别人模仿对象的架构改动；看证据——包括测试输出、命令结果、截图和审查员的发现；以及对结果负责，每条合进去的改动都有人对它负责，不管字是谁打的。"
+    },
+    {
+     "type": "paragraph",
+     "text": "如果大部分阅读都由机器来做，人还怎么熟悉代码？他们没有为此单独定一套正式流程。想了解某一部分时就请 Claude 只针对那一块写一份讲解，几分钟就能拿到，而且对应的是此刻的代码。默认在公开的 Slack 频道里工作也有帮助，因为别人还在做的时候就能看到他们在做的事。小或中等改动合入后如果出了问题，团队惯例通常是由合入的人来修——这跟追责不是一回事：由合入的人来修是因为他最了解当时的上下文，事故复盘看的是系统。"
+    },
+    {
+     "type": "callout",
+     "text": "其他团队可以怎么起步：提交前给 agent 能跑的检查，写进简短的 CLAUDE.md，加上 REVIEW.md；每条 PR 要求过 CI，模板里写上测试方法、风险和回滚办法；先在一个仓库里加上 AI 审查员，打磨几周再扩大范围。鉴权、计费、CI、发布工作流和安装程序始终要人看，不要让机器人的批准取代必需的人。"
+    }
+   ]
+  },
+  {
+   "id": "shaobitter",
+   "title": "Thariq Shihipar：Bitter Lesson 的甜蜜一面 —— 用可读规格和自制脚本语言，把创作控制权留在开发者手里",
+   "author": "meng shao @shao__meng",
+   "handle": "shao__meng",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-20",
+   "mins": 10,
+   "cover": "https://collect.tpgofighting.top/assets/covers/shaobitter.webp",
+   "coverAlt": "Bitter Lesson 的甜蜜一面演讲收录封面",
+   "summary": "完整长文版：转述 Thariq Shihipar 在 AI Engineer Code Summit 2026 的演讲——猜错的三件事（Bash、React、扩散模型）、工业革命与文艺复兴同时发生、锯齿前沿之内的平滑内部、12 个盲测 Claude 的世界地图实验（Opus 5.5 达 99.0%），以及把游戏代码库拆成引擎与可读规格、用 defineMove 与 seconds(0.6) 自制脚本语言拿回创作控制权。",
+   "keywords": [
+    "thariq",
+    "shihipar",
+    "bitter",
+    "lesson",
+    "甜蜜一面",
+    "可读规格",
+    "脚本语言",
+    "vibe",
+    "coding",
+    "平滑内部",
+    "锯齿前沿",
+    "shao",
+    "meng"
+   ],
+   "url": "https://x.com/shao__meng/article/2123595391077875984",
+   "stats": null,
+   "sourceNote": "来源：X · meng shao @shao__meng，2026-11-20，转述 Thariq Shihipar（前 Claude Code 核心开发者，现独立开发者）在 AI Engineer Code Summit 2026 的主题演讲「The Sweet Side of the Bitter Lesson」。发现路径：每日监控轮换扫到 @shao__meng，2026-11-20 收录。本页为结构化中文转述，保留三件猜错的事、平滑内部判断、世界地图实验数据与可读规格的修法，观点归原作者。",
+   "related": [
+    "shaoreview",
+    "wqulint",
+    "manus"
+   ],
+   "relatedNote": "互推：同为 meng shao 11 月 20 日的转述，code review 篇讲 Anthropic 内部如何审查 Agent 写的代码，本篇讲前 Claude Code 核心开发者如何用可读规格拿回创作控制权；WquGuru 的 Lint 工程哲学篇与 Manus 的产品方法论篇同属 Agent 工程一组。",
+   "rev": "b514292e9d43",
+   "sections": [
+    {
+     "type": "paragraph",
+     "lead": true,
+     "text": "前 Claude Code 核心开发者、目前的独立开发者 Thariq Shihipar 的演讲《The Sweet Side of the Bitter Lesson》。人们常把「苦涩教训」理解成模型会按自己那套怪异方式行事、人只能接受；他看到的另一面是：能力一旦进入足够熟练的区域，模型就可以按人希望的方式工作——他把这称为苦涩教训的甜蜜一面。"
+    },
+    {
+     "type": "heading",
+     "level": 3,
+     "text": "先看全貌：从三件猜错的事，到一门自制脚本语言"
+    },
+    {
+     "type": "paragraph",
+     "text": "演讲先承认三件没按他当初想象发展的事（Bash、React、扩散模型），再提出两个判断：软件工程正同时经历工业革命与文艺复兴；比起锯齿前沿，更要紧的是前沿以内的平滑内部。最后落到他自己的格斗游戏：vibe coding 让人失去对作品的感觉，他的修法是把代码库拆成引擎与一份人会读的可读规格，并现场演示用这门接近英语的脚本语言改游戏。"
+    },
+    {
+     "type": "image",
+     "url": "https://collect.tpgofighting.top/assets/images/shaobitter-1.webp",
+     "caption": "封面 · 本页设计封面（黑白版）：大字标题「Bitter Lesson 的甜蜜一面：把创作控制权留在开发者手里」。原文为 X Article 长文，配图 7 张（演讲幻灯片与现场演示截图）。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "他猜错的三件事"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**「Bash is all you need」**——有段时间智能体特别会用 Bash，Claude Code 也是围着 Bash 工具搭建的。他现在更喜欢直接用 MCP，而且旁边还出现了 Code Mode、Skills、渐进式披露；早期它们爱用 Bash，更像是一开始被怎样训练留下来的痕迹。",
+      "**「React is all you need」**——模型一度写 React 写得很顺，他担心过 React 几乎会变成最后一门语言。后来的情况不同了：模型现在能写 HTML、React、Swift，也能写 Figma 的专有 JSON；他看到已经有不少人在写自己的语言。",
+      "**「Diffusion models will eat art」**——他担心扩散模型会把艺术「吃掉」、人控制不了作品。这一条同样没有发生：大语言模型现在可以通过写代码、操控电脑，使用 Blender、Photoshop、Figma 这些原有工具，按人做艺术的方式去工作。"
+     ]
+    },
+    {
+     "type": "paragraph",
+     "text": "他把这三类担心都归到人们对苦涩教训、外星智能的想象上：模型会有一套怪异的做事方式，人只能接受、甚至只能臣服。在他看来后来并没有走到那一步。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "工业革命与文艺复兴同时发生"
+    },
+    {
+     "type": "paragraph",
+     "text": "问题回到：怎样才能既对 AGI 真正上心，又把人放在中心？他认为这件事特别要紧，因为软件工程师正处在 AI 采纳的最前线：软件领域正在发生的变化，随后也会发生在知识工作和经济的其他部分。对 AI 本身，他愿意同时用两个词来看：**工业革命**——大家常说 software factories，软件正在从一种不可靠、很难推进的手艺变成不再构成限制的东西；**文艺复兴**也同时在发生——人们想要质量更高的软件，多放进去的每一点创造力、用处、精神、灵魂都有用，而且有经济价值。幻灯写得更干脆：工业化比的是更快、更稳、更便宜地交付；文艺复兴要交出人们从未见过的东西。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "锯齿前沿与平滑内部"
+    },
+    {
+     "type": "paragraph",
+     "text": "谈论模型能力时人们常说 jagged frontier（锯齿前沿）：从让模型写一个函数，到做一个功能、一个待办应用、「帮我做个 Slack 克隆」，再到「从零做一版马里奥赛车」。他真正想强调的是这条前沿里面的 **smooth interior（平滑内部）**：模型变强的时候，能力不只是在边界上往外戳，也会沿水平方向变宽——会写 React，也就能写 Figma、写 JSON，有一大片任务模型都已经相当熟练。因此，如果问题已经落在模型能力很够用的区域里，人就可以按自己想要的方式去要结果：做一份设计稿，可以要 HTML，可以要 React，可以要 Figma 文件，也可以让模型操控电脑打开 After Effects 去出一条视频；路径不必只有一条。"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**99.0%** — Opus 5.5 盲测辨认陆地/水面的准确率（12 个模型最高）",
+      "**16,200 个点** — 世界地图实验取样：地球上每隔 2 度取一点，不给图像与工具、只问陆地还是水面，按 1 公里陆地掩膜、面积加权"
+     ]
+    },
+    {
+     "type": "paragraph",
+     "text": "为了把「一般知识」说得更具体，他展示了那张地图：Opus 4.6 准确率 91.2%，看去仍像一张有些模糊的地图；Opus 5.5 到了 99.0%，几乎已经接近完整的世界；12 个模型里最低的是 Sonnet 3.7 的 89.6%。对他来说，锯齿前沿已经越来越不像最重要的那件事，更要紧的是模型拥有的一般知识。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "把引擎和可读规格拆开"
+    },
+    {
+     "type": "paragraph",
+     "text": "他讲到自己正在做的游戏：一款二维等距视角的格斗游戏，灵感来自《降世神通》和《任天堂明星大乱斗》，做起来却很挫败。他会说「让这个角色扔一块石头」，模型确实做了，可扔石头时还有许多选择：石头到底穿不穿墙，速度、大小、蓄力又该怎么算；模型替他做了一堆决定，他试玩之后完全说不清这个角色在干什么。幻灯上两句话很重：这不是文艺复兴的感觉；你必须成为专家，把它里里外外弄清楚。"
+    },
+    {
+     "type": "paragraph",
+     "text": "他的修法是把代码库拆成两部分：一部分是**引擎**，他不必细读；另一部分是一个他曾叫做 spec、后来想改叫 human 的文件夹，专门放他会读的代码。这份代码有 lint，也给 Claude 定了规则，读起来要像英语，密度刚好让人读完就知道游戏里在发生什么、也能动手改，并对游戏本身构成一份可核对的事实来源。PPT 上的例子是一个名为 swat 的招式，用 defineMove 来写，冷却时间写成 seconds(0.6)，避免在逻辑里塞一个裸数字。规则也很具体：**hero-name**——要用英雄的名字来称呼角色，不要用 me；**bare-number**——招式逻辑里不许出现裸数字，数字要在 tune 里起名字。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "现场演示与下一年"
+    },
+    {
+     "type": "paragraph",
+     "text": "演示里他打开了名为 bending-game 的项目：一边是 agent 代码（比如摄像机如何工作），他并不打算搞懂；另一边是角色和技能。他点开扔石头的招式：这个角色扔石头至少有三种路径——从地面抓起，从墙里取出，还可以在碎石之后直接甩出去。他不必知道引擎底层如何实现，等于给游戏做了一门自制的脚本语言。现场他把石头改得更大，写成 1.5，然后在真正的 IDE 里打开游戏——角色蓄力，石头明显变大，再扔出去。"
+    },
+    {
+     "type": "callout",
+     "text": "他最后想强调的是：人需要决定未来的工作看起来是什么样子，也需要决定理想中的体验是什么。模型并非一种外星智能，非要把人推进某一种工作方式；它们几乎什么都能做，而且会去做。人的工作，是把这场文艺复兴带来。"
+    }
+   ]
+  },
+  {
+   "id": "wlzh",
+   "title": "Telegram 的 AI 自动化生态，小白从零看懂机器人、MCP、Skills 到底怎么接",
+   "author": "M. @wlzh",
+   "handle": "wlzh",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 14,
+   "cover": "https://collect.tpgofighting.top/assets/covers/wlzh.webp",
+   "coverAlt": "Telegram 的 AI 自动化生态新手指南收录封面",
+   "summary": "完整长文版：Telegram AI 自动化新手全指南——机器人与用户号两条路线、生态四层、BotFather 建机器人、四个 Agent 接入方案（Claude Code 官方插件、OpenClaw、Hermes、cc-connect）、MCP 三选与 PyPI 装错包大坑、Skills 与 MCP 的分工、n8n 方案、八类坑与权限从小往大放的推荐顺序。",
+   "keywords": [
+    "telegram",
+    "机器人",
+    "mcp",
+    "skills",
+    "botfather",
+    "用户号",
+    "mtproto",
+    "openclaw",
+    "hermes",
+    "cc-connect",
+    "wlzh",
+    "自动化"
+   ],
+   "url": "https://x.com/wlzh/article/2123326980070486525",
+   "stats": null,
+   "sourceNote": "来源：X · M. @wlzh，2026-11-19。发现路径：重点监控号 @wlzh，2026-11-20 收录（原文发布于 11 月 19 日）。本页为结构化中文转述，保留两条路线、四个接入方案、MCP 三选与装错包大坑、八类坑位和推荐顺序，观点归原作者。",
+   "related": [
+    "grokbot",
+    "antigravity",
+    "wqulint"
+   ],
+   "relatedNote": "互推：lauren @poteto 的 Grok Bot 自动化篇讲 Bot 团队与 routines，本篇讲把 Agent 接进 Telegram 的通道与权限；雪瑜的 Antigravity 攻略同属工具接入实操；WquGuru 的 Lint 篇同属 Agent 工程纪律。",
+   "rev": "d4a28ee0a3b7",
+   "sections": [
+    {
+     "type": "paragraph",
+     "lead": true,
+     "text": "Telegram 上的 AI 自动化是一整套东西：机器人、用户号、MCP、Skills、Agent 网关。这篇按「先分清路线，再选接入方式，最后排坑」的顺序讲给新手：小白先走机器人，只有确实要读历史、总结未读时再考虑用户号，而且只开只读权限——权限从小往大放，机器人出事损失的是一个可重置的 token，用户号出事损失的是用了很多年的账号。"
+    },
+    {
+     "type": "heading",
+     "level": 3,
+     "text": "先看全貌：两条路线、四层生态、一条推荐顺序"
+    },
+    {
+     "type": "paragraph",
+     "text": "全文九节：先分清机器人与用户号两条接入路线；再看自下而上的生态四层（入口 → 开发库 → MCP 与 Skills → Agent）；然后是动手两步——找 BotFather 建机器人、把 Agent 接进 Telegram（按上手难度排了四个方案）；接着讲清 MCP 是什么、Skills 和 MCP 差在哪；不想碰命令行还有 n8n；最后是按严重程度排的坑位清单与从头来的推荐顺序。"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**39 万+** — OpenClaw 的 star 数（MIT 许可证，常驻网关）",
+      "**20 条/分钟** — Telegram 群消息频率上限，AI 刷屏式输出会撞上",
+      "**1 个** — 一个手机号目前只能绑一个 api_id"
+     ]
+    },
+    {
+     "type": "image",
+     "url": "https://collect.tpgofighting.top/assets/images/wlzh-1.webp",
+     "caption": "封面 · 本页设计封面（黑白版）：大字标题「Telegram 的 AI 自动化生态：机器人、MCP、Skills 到底怎么接」。原文为 X Article 长文，配图 37 张（多为官方文档与仓库 README 截图）。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "两条接入路线"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**机器人（Bot API）**——找 @BotFather 建机器人拿 token，不用手机号；不能主动找用户开口（对方须先发消息或把机器人拉进群），读不了历史消息、不能搜索。",
+      "**用户号（MTProto）**——登录自己的真人账号，去 my.telegram.org 申请 api_id 和 api_hash，手机号登录生成会话；账号在群里能看到的程序都能看到、历史也能读。代价是风险：非官方客户端登录会被自动放进观察名单，滥用会被永久封禁。"
+     ]
+    },
+    {
+     "type": "paragraph",
+     "text": "生态四层自下而上：Telegram 两个入口 → 开发库 → MCP 服务器与 Skills → 各种 Agent。开发库方面，机器人侧有 python-telegram-bot、aiogram、grammY、telegraf；用户号侧有官方 TDLib、kurigram、mtcute。注意老教程常推的 **Telethon、gramjs、pyrogram 三个仓库现已归档**（Telethon 已搬到 Codeberg），别照两三年前的教程装。小白不用自己写代码调开发库，选一个 Agent 再决定它通过哪种方式碰到 Telegram 即可。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "建机器人，再把 Agent 接进来"
+    },
+    {
+     "type": "paragraph",
+     "text": "**第一步：找 BotFather 建机器人。**在 Telegram 里搜 @BotFather，发 /newbot，依次给显示名和 username。username 5–32 字符，只能用拉丁字母、数字和下划线，必须以 bot 结尾，建好后不能改；建完得到一串 token。三个注意点：认准 @BotFather 本尊（用户名一字不差 + 蓝色认证标记）；token 就是机器人的全部控制权，绝不贴进聊天、截图发群或提交到 git，泄露后回 BotFather 发 /token 重新生成；username 定了不能改，起名前想好。"
+    },
+    {
+     "type": "paragraph",
+     "text": "**第二步：把 Agent 接进 Telegram**（按上手难度排了四个）："
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**Claude Code 官方 Telegram 插件**（research preview）——前置先装 Bun；配对完立刻切 allowlist，否则陌生人也能收到配对码回复。限制：只在 Claude Code 会话开着时才收得到消息。",
+      "**OpenClaw**（MIT，star 39 万+）——常驻网关，适合 7×24 在线；陌生人私聊默认要先配对，配对码一小时过期。提醒：curl | bash 安装前先打开地址看一眼脚本内容。",
+      "**Hermes Agent**（MIT）——一个网关进程同时接 Telegram、Discord、Slack；限定使用者填的是数字用户 ID（不是用户名），去 @userinfobot 查。",
+      "**cc-connect**——把电脑上已有的编程 Agent 桥接到聊天平台，用 Long Polling，不用公网 IP。注意默认值：allow_from 不填时所有用户都被允许，装完第一件事填成自己的数字 ID。"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "MCP 是什么，Skills 差在哪"
+    },
+    {
+     "type": "paragraph",
+     "text": "MCP 官方定义是连接 AI 应用与外部系统的开放标准；作者的比方：AI 是电脑，MCP 是统一插口（USB-C），Telegram 是插上去的设备。Telegram 方向挑了三个还在更新的 MCP 服务器：官方 telegram 插件（走机器人）；chigwell/telegram-mcp（走用户号，Apache 2.0）；chaindead/telegram-mcp（走用户号，Go，MIT）。后两个走用户号，等于 AI 拿到真人账号权限。"
+    },
+    {
+     "type": "paragraph",
+     "text": "**大坑**：PyPI 上叫 telegram-mcp 的包是另一个项目，不是 chigwell 的。README 明确警告不要用 uvx telegram-mcp / pip install telegram-mcp 安装；照某些教程敲，再把 api_id、api_hash 和会话字符串喂给它，账号凭证就交到了不相干的代码手里。建议所有用户号方案都从只读开始，让 AI 总结未读、起草回复就够了，发送留给自己点。"
+    },
+    {
+     "type": "paragraph",
+     "text": "**Skills** 就是一个文件夹里的一份 SKILL.md（名字、描述、操作说明），最初由 Anthropic 开发，现为开放标准。分工一句话：**MCP 给 AI 一双能伸到 Telegram 里的手，Skills 是告诉它这双手该怎么用的说明书**；两者常搭着用。不想碰命令行还有 n8n：拖拽式工作流平台，Telegram 节点只支持机器人 token 认证，还能与 MCP 双向互通。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "八类坑与推荐顺序"
+    },
+    {
+     "type": "paragraph",
+     "text": "会丢号、丢控制权的排在最前：token 泄露等于机器人被接管；用户号会话字符串外泄等于整个账号被拿走；装错包；接进 Telegram 后不设白名单，谁都能指挥你电脑上的 AI；用户号登录第三方客户端会进观察名单。会让你以为「坏了」的：机器人进群看不到消息多半是隐私模式；机器人不能主动找人、读不了历史；群消息每分钟不超过 20 条。规则红线：Telegram API 服务条款明确禁止用平台数据训练或微调 AI 模型。容易被忽略的：聊天内容里可能藏着写给 AI 的指令，这也是建议先只读的原因。"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**STEP 1 建机器人**：只做 BotFather 那一节，拿到 token 并保管好。",
+      "**STEP 2 装官方插件**：体验在 Telegram 里跟自己电脑上的 AI 说话，配对完立刻切 allowlist。",
+      "**STEP 3 常驻与进阶**：想一直在线再换常驻网关；确实需要读历史再上用户号 MCP，全程只读起步；最后把常用操作写成 Skills。"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "wqulint",
+   "title": "监督一个比你聪明的人：拆解土豆姐的 Agent 与 Lint 工程哲学（长文慎点）",
+   "author": "WquGuru @wquguru",
+   "handle": "wquguru",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 16,
+   "cover": "https://collect.tpgofighting.top/assets/covers/wqulint.webp",
+   "coverAlt": "监督一个比你聪明的人 Agent 与 Lint 工程哲学收录封面",
+   "summary": "完整长文版：拆解 Lauren Tan @poteto 的工程哲学六节——间接提示词先让 Agent 复述、/teach /how /why /recall 与记忆分层、README 与代码原型做规划、/architect 多模型竞技场五步闭环、Lint 铁律与倒金字塔防线（/no-comments、/correct）、验证底座（专用 CLI 六条标准 + Feature Map）。她每月高置信度合并 2,000 个 PR。与 lauren 本人的 Grok Bot 自动化篇对照读。",
+   "keywords": [
+    "poteto",
+    "lauren",
+    "tan",
+    "lint",
+    "agent",
+    "工程哲学",
+    "pstack",
+    "architect",
+    "teach",
+    "how",
+    "why",
+    "correct",
+    "wquguru",
+    "土豆姐"
+   ],
+   "url": "https://x.com/wquguru/article/2123269893588152709",
+   "stats": null,
+   "sourceNote": "来源：X · WquGuru @wquguru，2026-11-19，拆解对象为 Lauren Tan @poteto。发现路径：重点监控号 @wquguru，2026-11-20 收录。参考：pstack 源码 github.com/cursor/plugins/tree/main/pstack、/how（github.com/poteto/how）、验证技能示例（github.com/poteto/verification-skill-example）。本页为结构化中文转述，保留六节方法论、倒金字塔排序与关键数据，观点归原作者。",
+   "related": [
+    "grokbot",
+    "handoff",
+    "addy"
+   ],
+   "relatedNote": "互推：拆解对象 lauren @poteto 本人的《Automate Anything with Grok Bot》讲普通人怎么交接工作，本篇拆她的工程纪律；Hardy Chen 的《怎样把一项工作真正交给AI》是读那篇方法论后的落地展开；Addy Osmani 的验证方法论篇与本篇的验证底座一节正面对照。",
+   "rev": "d39988e96e85",
+   "sections": [
+    {
+     "type": "paragraph",
+     "lead": true,
+     "text": "开篇引刘邦的话——运筹不如张良、治国不如萧何、打仗不如韩信，但刘邦能用好三位人杰，所以取天下。今天写代码的人也正在经历从「将兵」到「将将」的转变：当 AI 写代码比你强、而你脑子里装不下全部代码时，怎么管它？全文围绕 Lauren Tan（@poteto）「监督一个比你聪明的人的艺术」展开——她每月往生产环境高置信度合并 2,000 个 PR，方法论系列总浏览量超 500 万。"
+    },
+    {
+     "type": "heading",
+     "level": 3,
+     "text": "先看全貌：六节一条线"
+    },
+    {
+     "type": "paragraph",
+     "text": "一、克制微操，用「间接提示词」逼 Agent 用自己的话复述问题；二、让 Agent 教你（/teach、/how、/why、/recall），顺便治好它的盲目自信，并把记忆分层；三、不再死磕抽象计划，用 README 和代码原型做规划；四、多模型竞技场与「借箸销印」的架构纪律（/architect 五步闭环）；五、把每一次纠正变成铁律——Lint 实践与倒金字塔防线；六、造杠杆：得以「将将」的验证底座（专用 CLI + Feature Map）。"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**2,000 个/月** — @poteto 每月往生产环境高置信度合并的 PR 数",
+      "**500 万+** — 该系列方法论总浏览量",
+      "**77.3 万** — 倒金字塔帖子的浏览量（1.3 万收藏）",
+      "**约 1,150 个** — 实战：4 天里合入的 PR 数（做一个小游戏）"
+     ]
+    },
+    {
+     "type": "image",
+     "url": "https://collect.tpgofighting.top/assets/images/wqulint-1.webp",
+     "caption": "封面 · 本页设计封面（黑白版）：大字标题「监督一个比你聪明的人：拆解土豆姐的 Agent 与 Lint 工程哲学」。原文为 X Article 长文，配图 17 张。与 lauren @poteto 本人的《Automate Anything with Grok Bot》互为对照：那篇讲普通人怎么交接工作，这篇拆她的工程纪律。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "间接提示词：先让它复述"
+    },
+    {
+     "type": "paragraph",
+     "text": "前沿模型常栽在两个失效模式上：规格没写清楚、模型缺乏足够上下文。老模型时代提示词写得极具体；现在模型写代码比人好，要追求微妙平衡：既告诉 Agent 目标，又留自由度。技巧「间接提示词」：不直接指挥改哪行代码，先引导 Agent 用自己的话把问题掏出来——Slack 里有人报问题，先让 Agent 读帖子、用大白话复述一遍。一举三得：**逼模型降噪**（把嘈杂的多人聊天记录压缩成结构化问题陈述）；**第一时间抓跑偏**（动工写第一行代码前就能摁住纠偏）；**防止人类带偏模型**（自己对 Bug 的假设常是错的，写进提示词反而引上错路）。还可以让 Bot 反过来采访你，一次只问一个问题，走几个真实案例（含出过错的例外情况），把隐性判断挖出来，等复述完全对味再放手。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "让 Agent 教你：/teach 与记忆分层"
+    },
+    {
+     "type": "paragraph",
+     "text": "跟比你聪明的人合作最怕两件事：它干了什么你看不懂不敢信；它其实也没看懂，却满脸自信地下结论。解法是 /teach 技能，让 Agent 用直观方式把事情讲明白，底层调用 /how 与 /why：**/how** 追踪运行时机制，涉及多目录或多服务时并发拉多个探索子 Agent 摸底；**/why** 调查历史动机和意图——代码只告诉你发生了什么，极少告诉你当初为什么这么写，它会并发查 Git 提交历史、PR 评审评论、Linear 工单、Notion 设计文档、Slack 聊天记录等历史证据。为了解释清楚，Agent 必须真的读代码、查历史数据，顺带治好没读代码就下结论的毛病。"
+    },
+    {
+     "type": "paragraph",
+     "text": "记忆分层：**代码库本身是终极记忆**（团队所有决策的投影和唯一真实源头）；Feature Map（功能地图）是省 Token 的物化记忆；/why 挖掘跨系统的历史决策背景；/recall 捞近期对话。靠这几样，把庞大代码库压缩成人脑能理解、Agent 也能立刻进入状态的上下文。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "用 README 和代码原型做规划"
+    },
+    {
+     "type": "paragraph",
+     "text": "土豆姐批评大多数计划模式过度指定实现细节，却对其他重要东西交代不足。她在 pstack 里半开玩笑说「我不相信计划」——准确说是通过代码做计划。对着纸面抽象计划挑刺，Agent 会凭空幻觉理论风险；抽象长篇计划只给人「我和 AI 今天干了好多活」的进度幻觉。三样替代品："
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**README 驱动开发 + /technical-writing**——做共享库或新模块先写 README 或教程，从假设用户怎么调用 API 倒推架构；技能基于 Diátaxis 文档框架，严格区分 Tutorial、How-to guide、Reference、Explanation 四种模式。",
+      "**原型剧本**——/poteto-mode 内置 23 个按需加载的剧本（截至 0.15.0 版本）；做 UI 交互改动时，Agent 写两三个用完即扔的草稿变体，自己点按交互、截图、测算真实耗时和布局，用实证数据回答悬而未决的问题。",
+      "**以验证为核心的短清单**——真要写执行计划文档也只写短清单，用完即删：每项任务围绕「证据和验证」展开，光跑过测试不算完，必须真把代码跑起来验证有效才算数。"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "/architect：多模型竞技场"
+    },
+    {
+     "type": "paragraph",
+     "text": "引张良借箸典故：Agent 时代，工程师更应把时间花在架构、数据结构、系统配合上，让 Agent 填实现细节。为此 pstack 配了核心技能 /architect，输入一句指令，架构设计变成严密五步闭环："
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**STEP 1–2 摸底 + 草图竞技场**：先对受影响系统跑 /how 和 /why 摸清职责边界与约束；再跨不同模型家族并发拉多个独立候选设计 Agent，每个交完整设计包，通常只画类型签名。",
+      "**STEP 3–4 交叉评审 + 按草图实现**：用与主 Agent 不同模型的交叉评委按严格评分标准评审各家方案、合成为最优解；再把占位符替换成真实逻辑，实现中发现偏差立刻浮现出来。",
+      "**STEP 5 设计错了就推翻重来**：实证证据表明草图画错了，全部扔掉从头再来。判断标准：如果同样的临时补丁出现在毫不相关的多个调用处，或者类型系统被迫用上 any、强制类型转换这类逃生舱口，就是实证。"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "Lint 铁律与倒金字塔防线"
+    },
+    {
+     "type": "paragraph",
+     "text": "团队每天合入几百个 PR，怎么保证代码库不变成失控垃圾山？答案在 lint 实践里。很多人管 Agent 第一反应是狂写 AGENTS.md、叠长篇规则，但在 @poteto 的体系里文字规则被排在倒数位置。她画成的**倒金字塔**（那条帖子 77.3 万浏览、1.3 万收藏）从顶层到底层依次是：代码库架构改进 → 静态分析与测试 → 散文式文字规则与注释 → 人工审查。嫌弃文字规则的原因：代码库就是记忆，每个小毛病不变成硬性机器约束，就会像病毒一样被后续 Agent 疯狂复制；注释不仅会过期，还会被 Agent 当成解释丑陋变通补丁的借口。原话：comments are simply a crutch that agents will happily misuse。"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**/no-comments**——审查代码改动里的注释，能删的一律删掉；约束性注释强制改写成类型定义、运行时检查、测试或 CI lint；eslint-disable 或 @ts-ignore 默认当可疑代码处理。",
+      "**/correct**——Agent 自己读最近 commit、revert 记录、代码审查评论等，把反复出现的错误归类（出现两次才算一类），严格按「架构消灭 → 类型系统 → lint / CI → 测试 → 最后才写文档」的层级加固防线。硬核纪律包括：lint 报错必须直接点名该用哪个文件、哪个类型或哪个函数；每条新检查规则必须证明能在历史上某个真实错误上触发失败；任何破例必须写在具体那行代码上，附理由、过期日期和人类批准。",
+      "**实战**——4 天里合入约 1,150 个 PR 做一个小游戏，每发现一个问题就让 bot 写一条对应 lint 规则；性能敏感代码统一用 .hot.ts 后缀命名，专门写 lint 严禁在 .hot.ts 文件里分配内存；代码注释在该项目里直接被 lint 全面禁掉。"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "造杠杆：验证底座"
+    },
+    {
+     "type": "paragraph",
+     "text": "pstack 指南第 1 篇的核心原则：验证即一切（Verification is all you need），以及「造杠杆（Build the Lever）」。Agent 不能自己验证自己写的代码对不对，其他一切白搭。「造杠杆」原则：在创建技能时优先给 Agent 工具，别只给 Markdown 文档。标准验证技能由两块核心资产组成："
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**给应用专门写的 Agent 友好 CLI**——把点击、导航、调试、抓性能轨迹、造测试数据库、处理鉴权等操作全部脚本化。6 条设计标准：API 易于组合（深模块哲学）；破坏性命令要有 --dry-run；用子命令渐进式披露功能；报错信息必须详尽、直接告诉 Agent 下一步改做什么；配备丰富的 --help；输出采用机器可读格式（如 JSON）。",
+      "**Feature Map（功能地图）**——自动扫描应用生成，把每个功能是干嘛的、用户怎么点过去、背后调什么命令整理成清晰目录，配合每天定时自动更新。"
+     ]
+    },
+    {
+     "type": "quote",
+     "text": "从刘邦「善将将」到 @poteto「监督一个比你聪明的人」，底层道理相通——承认手下人杰在具体写代码上比你强，别用自己的预设微操它；但要让它把话讲明白，让它拿跨源历史证据和跑得通的原型说话，更要把踩过的每个坑锻造成不讲情面的 lint 铁律和顺手的验证工具。"
+    }
+   ]
+  },
+  {
+   "id": "handoff",
+   "title": "怎样把一项工作真正交给AI",
+   "author": "Hardy Chen @Chchenhao0129",
+   "handle": "Chchenhao0129",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 13,
+   "cover": "https://collect.tpgofighting.top/assets/covers/handoff.webp",
+   "coverAlt": "怎样把一项工作真正交给 AI 收录封面",
+   "summary": "完整长文版：读 lauren《Automate Anything》后的落地展开——以小店改期邮件为例：先讲清目标的两个条件、让 AI 复述并用旧邮件试它、多讲一次为什么没照旧办、功能地图与编号串记录、掉线后的验收记录、反馈改流程与批准分开、自动触发放最后、先算值不值得交，附两张测试表与三组变体演练。与 Grok Bot 自动化篇互为源头与展开。",
+   "keywords": [
+    "交接",
+    "ai",
+    "工作流",
+    "自动化",
+    "改期",
+    "预约",
+    "功能地图",
+    "benny",
+    "hardy",
+    "chen",
+    "lauren",
+    "poteto",
+    "验收"
+   ],
+   "url": "https://x.com/Chchenhao0129/article/2123217337285505216",
+   "stats": null,
+   "sourceNote": "来源：X · Hardy Chen @Chchenhao0129，2026-11-19（经 @eianlu 转发进入监控名单视野）。发现路径：每日监控经 @eianlu 转发扫到，2026-11-20 收录。作者自述：Hardy，热爱 vibe coding，平时写怎么用 AI 做工作流、搭网站和做产品。本页为结构化中文转述，保留小店改期主线、Benny 案例与实操演练，观点归原作者。",
+   "related": [
+    "grokbot",
+    "wqulint",
+    "cg"
+   ],
+   "relatedNote": "互推：源头是 lauren @poteto 的《Automate Anything with Grok Bot》，本篇用小店改期把它落成可演练的操作；WquGuru 拆解 @poteto 的 Lint 工程哲学是同一方法论的工程面；铁柱 AGI 的 Grok Bot Anywhere 是通道工具篇。",
+   "rev": "99bf8c1254e7",
+   "sections": [
+    {
+     "type": "paragraph",
+     "lead": true,
+     "text": "作者读了 Lauren Tan 的《Automate Anything with Grok Bot》，追问同一件事：手上的活交出去以后，凭什么知道它办妥了？AI 已经会写代码了，可一到打开应用、复现问题、检查改动有没有用，还是得有人替它做。全文以一家小店的改期邮件为例，把 Lauren 的交接方法论翻译成普通人能动手的操作。"
+    },
+    {
+     "type": "heading",
+     "level": 3,
+     "text": "先看全貌：交接不是把步骤念一遍"
+    },
+    {
+     "type": "paragraph",
+     "text": "全文的顺序是：先说清楚到底想办成什么事（目标）；交接时多讲一次你为什么没照旧办（隐性判断）；让它找对记录、也知道该信哪条；做到一半掉线，下一次从哪儿接着做；跑通一遍再看哪里会卡住；单子办完，反馈还可以拿来改流程；把发现问题和批准改法分开；自动触发放在最后；最后先算这项工作值不值得交出去。文末附一份可直接复制的实操：用一个 AI 对话和两张测试表试着交接改期。"
+    },
+    {
+     "type": "image",
+     "url": "https://collect.tpgofighting.top/assets/images/handoff-1.webp",
+     "caption": "封面 · 本页设计封面（黑白版）：大字标题「怎样把一项工作真正交给 AI」。原文为 X Article 长文，配图 6 张。与 lauren @poteto 的《Automate Anything with Grok Bot》互为源头与展开：那篇讲方法论，这篇用小店改期把它落成可演练的操作。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "先说清楚，你到底想办成什么事"
+    },
+    {
+     "type": "paragraph",
+     "text": "假设小店有位客人发邮件想把预约改到周五下午。AI 改好了预约，发确认信时邮件工具却报超时；过一会儿同一个请求又来了，预约还要改一遍吗？确认信要不要重发？目标要讲清：对小店来说事情办妥须满足两个条件——**客人知道自己约在什么时候，店里到那个时间也接得了**。目标一旦清楚，AI 的「优化」也有判断标准：它建议一收到邮件就发确认信，回信是快了，客人却可能已当成预约成功，最后店员还得再发一封解释。"
+    },
+    {
+     "type": "paragraph",
+     "text": "Lauren 建议把平时怎么做讲给 AI 听，懒得写就直接说，讲完让它复述一遍。复述能听出平时顺手做的判断有多少没交代：客人回一个「好」，是同意改期还是只表示看见了？复述完再找两封脱敏旧邮件让它试试：一封办得很顺，一封连自己也得停下来想想；走到第二封它能把卡住的地方问清楚，这些规则才算教到能用的程度。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "多讲一次你为什么没照旧办"
+    },
+    {
+     "type": "paragraph",
+     "text": "客人临时换服务项目，原先约半小时、新项目得做一小时，前后还要留收拾时间。老员工会顺手把预约时长和缓冲时间一起重算；AI 可能只改备注、原来的结束时间照旧。你和它说一回为什么要回头重排，比念十遍「记得核对预约」更容易讲明白。有些事可以直接交它（如从两个空档里给客人挑可选时间）；有些得查明文规定（如做这个项目到底要留多久）；还有一种查完资料也该问人（如客人迟到了今天要不要为他延长营业）。只写一句「灵活处理」，轮到 AI 就可能把这句话当成授权。"
+    },
+    {
+     "type": "paragraph",
+     "text": "**让它找对记录，也让它知道该信哪条。**Lauren 在 8 月分享里举例：有人说「侧边栏很卡」，AI 还是可能在界面和代码里绕半天；后来她给 AI 写了一张功能地图，碰到反馈先查地图就知道去哪试。回到店里也有一张地图：客户想改到几点去看邮件，现在约的是几点去看预约表，那会儿接不接得了去看排班。邮件写周五、预约表还是周四，两边都可能是对的——一边写客人的打算，一边记已定下来的事。可用固定编号把几处记录串起来：客户编号找这个人，预约编号找这笔单。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "掉线之后，从哪儿接着做"
+    },
+    {
+     "type": "paragraph",
+     "text": "回到开头那封邮件：先翻预约表看日期是不是已改到周五，再翻发件箱或邮件服务回执看刚才那封信发出去没有。超时有时只是没等到回执，信可能已经发了；查到预约已改好就不用再动；发信结果查不清就把这一件事交回来。单写「改期处理中」，下一个接手的人还是得从头查。她演示过一个叫 Benny 的云端助手：它在旧版本里真的遇到了用户说的问题，又去看了开发中的版本发现已经修好了；团队拿到这两条结果就知道只差发布新版本——好的验收记录应让下一位接手的人知道活干到哪儿了。"
+    },
+    {
+     "type": "paragraph",
+     "text": "再往下想：两位客人同时改期，两个 AI 都查到周五两点还有空，光嘱咐「改之前先看看」，两边完全可能在差不多同一刻看完；预约系统要能在保存时拦住冲突。有些错得教 AI 留心，有些可以直接让工具拦下来。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "反馈改流程，批准另算"
+    },
+    {
+     "type": "paragraph",
+     "text": "原文还有一家修车店：客人留差评说等得太久，把进店、有人接待、交车钥匙、开始维修几个时间摆一块看，才有机会知道他到底在哪儿等。作者的做法：先请 AI 把这类单子找出来，看客人常常在哪一段等得久；至于原因，单看一条差评下不了结论，挑出最值得查的几种可能再去问排班的人。"
+    },
+    {
+     "type": "paragraph",
+     "text": "**把发现问题和批准改法分开。**假设它发现周五总是等得久，建议那天少接几单，等候时间也许真的缩短了，没约上的客人却更多；店里得决定愿不愿意用少接单换少等待，这个决定比找到差评难得多。作者会先试一小段时间，同时记等了多久、接了多少单、劝退了多少人。AI 找到值得改的地方已经帮了忙，改法有没有用得让它经得住下一轮真实业务。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "自动触发放最后，先算账"
+    },
+    {
+     "type": "paragraph",
+     "text": "事情可以从一封新邮件、一条消息或固定时间开始，权限却得往后问一步：它查到什么，才可以改预约、替店里给客户回信？作者会先让它给建议，等容易弄错的情况都试过，再让它动一种店里明确允许它改的预约；遇到赔钱或店里没碰过的要求还是由店员处理。把办不下去的单子留下来，写上卡住的原因和最后办到哪儿，店员看得见这些才接得住。"
+    },
+    {
+     "type": "paragraph",
+     "text": "**先算这项工作值不值得交出去。**举个假设：原来店里每周花两小时处理改期，上了 AI 例行操作只剩半小时，听着省了一个半小时；可如果每周还得花一小时查没处理好的单、补发确认信，实际只省下半小时；配置、工具费、改错还没算。文末的实操用两张测试表（「预约」+「改期处理」）和三组变体演练——认不出是哪一笔、时段撞了、预约改好了但发信结果待查——试它能不能做出正确判断；用真实工具时一次只交出去一小步，先开读取权限，之后才考虑开放一种写入动作。"
+    },
+    {
+     "type": "callout",
+     "text": "回到开头那封邮件：要是 AI 能告诉你「周五的预约已经改好，确认信有没有发出我查不到，请你看一下」，这次交接就有收获了——你只要去看那一封信。"
+    }
+   ]
+  },
+  {
+   "id": "shortpost",
+   "title": "如何给 AI 短剧做后期：9 段素材剪成 4 分钟成片，声音、调色、字幕参数全公开（附剪辑技能包）",
+   "author": "Miller @TuyetloanP81840",
+   "handle": "TuyetloanP81840",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 18,
+   "cover": "https://collect.tpgofighting.top/assets/covers/shortpost.webp",
+   "coverAlt": "如何给 AI 短剧做后期参数全公开收录封面",
+   "summary": "完整长文版：「一个人拍 AI 短剧」系列第 5 篇——第 4 集 9 段素材 46 个镜头剪成 4 分 05 秒：体检八项与剪辑清单、同期声与配音三工具（剪映朗读、IndexTTS 2.5、音谷）、声音三个数（对白 -16 LUFS、配乐三分之一、峰值 -1 dB）与混音参数、硬切与三种转场、2.4:1 裁切与同款 LUT、字幕文稿匹配与样式规格、7 个坑与 Agent 分工，附技能包「短剧剪辑师」。",
+   "keywords": [
+    "ai",
+    "短剧",
+    "后期",
+    "剪辑",
+    "剪映",
+    "混音",
+    "lufs",
+    "调色",
+    "字幕",
+    "indextts",
+    "音谷",
+    "sonicvale",
+    "miller",
+    "技能包"
+   ],
+   "url": "https://x.com/TuyetloanP81840/article/2123328212700893554",
+   "stats": null,
+   "sourceNote": "来源：X · Miller @TuyetloanP81840，2026-11-19（经 @eianlu 转发进入监控名单视野），「一个人拍 AI 短剧」系列第 5 篇。发现路径：每日监控经 @eianlu 转发扫到，2026-11-20 收录。本页为结构化中文转述，保留全部关键参数（响度、混音、转场、画幅、字幕规格）与工具授权说明，观点归原作者。",
+   "related": [
+    "seedance",
+    "eian",
+    "ec2000s"
+   ],
+   "relatedNote": "互推：G哥的 Seedance 教程讲从分镜到成片的生成端，本篇讲生成之后的后期端；Eian 的全流程篇同属 AI 视频实操；ElevenCreative 的 2000s 游戏预告篇是同批收录的 Flows 玩法。",
+   "rev": "e17c3d85f223",
+   "sections": [
+    {
+     "type": "paragraph",
+     "lead": true,
+     "text": "AI 短剧被划走，很多时候不是画面不好，是声音：一段大一段小，配乐盖住台词。作者的《醒醒，我饿了》第 4 集，9 段素材全部抽对了，拼起来一放还不是一集片子。这篇把怎么从 9 段素材剪到 4 分 05 秒成片全部拆开：每一步剪映里怎么做，参数全公开，文末附一个丢给 AI 就能用的剪辑技能包。这是「一个人拍 AI 短剧」系列的第 5 篇，也是最后一篇。"
+    },
+    {
+     "type": "heading",
+     "level": 3,
+     "text": "先记三件事，片子就能好一大截"
+    },
+    {
+     "type": "paragraph",
+     "text": "时间不够的先做三件事：对白统一到 -16 LUFS（剪映里一键「响度统一」）；有台词时配乐压到对白的三分之一；导出后用手机外放听一遍。整个流程的顺序有讲究：先定剪辑，再调色，最后混音——剪辑没定就去调色、混音，后面每改一刀都要返工一次。后期拆成三件事：修（处理毛病）、统（让分别生成的素材像同一部片子）、包（片名、字幕、配乐、转场、封面）；AI 短剧的后期，「统」比真人拍摄重得多。"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**9 段 / 46 镜头** — 第 4 集素材：每段 16–30 秒，1280×720，24 帧",
+      "**4 分 05 秒** — 成片时长",
+      "**-16 LUFS** — 对白统一响度（素材原为 -16.7 至 -20.3 LUFS，差 3.6）",
+      "**-16.2 LUFS** — 成片实测响度，峰值 -1.4 dB"
+     ]
+    },
+    {
+     "type": "image",
+     "url": "https://collect.tpgofighting.top/assets/images/shortpost-1.webp",
+     "caption": "封面 · 本页设计封面（黑白版）：大字标题「如何给 AI 短剧做后期：9 段素材剪成 4 分钟成片」。原文为 X Article 长文，配图 44 张。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "开剪前先体检"
+    },
+    {
+     "type": "paragraph",
+     "text": "只记一件事：问自己「观众会不会注意到」。会，就修或补抽；不会，就放过。每段看八样：**头尾、人、台词、口型、声音、画面、字、衔接**——AI 视频第一帧和最后一帧最容易出问题；画面里有没有模型自己印上去的字幕、乱码招牌（第 4 集第 7 段模型在画面底部自己加了 3 句字幕，第 9 段也有）。体检结果每段记一条成一张剪辑清单，保留区间要写清楚。处理优先级：能剪就剪（问题在头尾就剪掉），能修就修（音量、底噪、偏色、画幅都不用重抽），最后才补抽（关键台词说错、主角的脸在近景里变了）。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "配音与声音：三个数"
+    },
+    {
+     "type": "paragraph",
+     "text": "**配音**：同期声能用就用（口型最准）；第 4 集 9 段素材的对白全是模型同期生成的。角色声音前后对不上、台词错得多，再上后期配音。工具三选：剪映自带朗读（最快）；**IndexTTS 2.5**（音色与情绪分开、可控制时长；用的是 bilibili 模型使用许可，商用先看协议）；**音谷 SonicVale**（一整集多角色配音一次配完，AGPL-3.0，原作者另写明商用要有书面授权）。红线：音色只用你自己的声音或明确授权给你的音色。"
+    },
+    {
+     "type": "paragraph",
+     "text": "**声音只记三个数**：对白 -16 LUFS；有台词时配乐约是对白的三分之一；峰值不超过 -1 dB。修声音的顺序别乱：先拉齐音量（剪映勾选「响度统一」），再清理底噪（别开太猛，人声会发虚），再对着毛病调 EQ——80 Hz 以下直接切掉；200 Hz 附近减 4 dB 治发浑；3 kHz 附近加 2–3 dB 提清晰度；最后缩气口，但只缩句和句之间的长空白，句子里面的停顿是表演，不动。**混音参数**：配乐先整体放到 -27 LUFS；台词出来时配乐自动再压低（侧链压缩压得快 0.04 秒、回得慢 0.6 秒）；剪映没有侧链就手动打关键帧，有台词处拉低 8–10 dB。混完用耳机、手机外放、电脑音箱各听一遍，手机外放最重要。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "剪：切点、转场与画面"
+    },
+    {
+     "type": "paragraph",
+     "text": "默认硬切，只有开头、结尾和「时间过去了」才用淡入淡出和压黑。每段头尾各去掉 1 帧（0.04 秒，看不出少了什么但闪帧没了）；声音头尾各加 0.03 秒淡入淡出，消掉接缝处的「啪」。第 4 集用了三种转场：开头淡入 1.2 秒；压黑表时间过去（0.4 秒淡出到黑、停 0.3 秒、再 0.4 秒淡入）；结尾淡出 1.5 秒再停 1 秒黑场。"
+    },
+    {
+     "type": "paragraph",
+     "text": "**画面**：从 16:9 裁成 2.4:1 宽银幕（取 533 高窗口放大到 1920×800，补黑边成 1920×1080），每个镜头的窗口位置单独定，原则是先保眼睛、再保手上的动作；顺手的好处是模型印在画面底部的字幕正好落在被裁掉的那一条里。调色先统一再出风格：选基准镜头、并排比、先调明暗再调偏色；全片用同一个 LUT（与第 3 集同款，80% 强度）；最后加轻微锐化（0.35）与一层很淡的颗粒，削掉 AI 画面的塑料感。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "字幕、包装与 7 个坑"
+    },
+    {
+     "type": "paragraph",
+     "text": "**字幕**：读得清比好看重要。有剧本就用剪映的「文稿匹配」（字是你给的，它只负责找时间），没有就识别后逐句校对——人名、专业词、同音字最容易错。断句按意思不断词，一行最好不超过 15 个字。样式：50 号思源黑体加粗、白字、1.8 像素深色描边。两版都留：烧录字幕版 + 无字幕成片加 SRT 文件。**包装**：片头 3.75 秒、片名单独用文字工具做、每一集用同一个模板只换片名和集数；封面同一模板出横版 4:3 与竖版 3:4；发之前在手机上看一遍——封面缩到列表大小还认得出主体和片名吗、字幕被平台界面挡住了吗、外放能听清台词吗。"
+    },
+    {
+     "type": "paragraph",
+     "text": "**最常见的 7 个坑**：剪辑没定就调色混音；只在电脑上听；配乐太响；降噪开太猛；缩气口缩掉了表演；识别字幕不校对；每个转场都加特效。**把后期交给 Agent**：重复劳动（逐个定裁切位置、统一响度、套 LUT、对字幕时间轴）交给 Agent 又快又不会漏；哪个镜头该删、节奏快慢、配乐情绪、成片好不好看还得人来定。工具：ffmpeg、jianying-headless、yichen-skills（非商用授权）、HyperFrames。技能包「短剧剪辑师」下载在作者主页资料库（miliagent.com/houqi），含同款 LUT、片名卡模板与剪辑清单模板。"
+    },
+    {
+     "type": "quote",
+     "text": "石膏和钢板差别不在材料，在于先把错开的骨头对好再固定住；后期也一样——素材都抽对了不等于片子就好了，把声音、画面、节奏一样一样对齐，它才是一集片子。"
+    }
+   ]
+  },
+  {
+   "id": "ec2000s",
+   "title": "Make a 2000s video game trailer with AI (full guide)",
+   "author": "ElevenCreative @ElevenCreative",
+   "handle": "ElevenCreative",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 5,
+   "cover": "https://collect.tpgofighting.top/assets/covers/ec2000s.webp",
+   "coverAlt": "2000 年代风游戏预告片 AI 制作指南收录封面",
+   "summary": "完整长文版（英文原文）：在 ElevenCreative Flows 里做 2000 年代风游戏预告片的五步工作流——组建角色队伍、为故事发生地做关键帧、把角色放进场景摆好动作、连到视频生成节点（Seedance 2.5）让它动起来、加音乐并用合成节点合片。与同作者《3 AI videos》同属 Flows 玩法系列。",
+   "keywords": [
+    "elevenlabs",
+    "flows",
+    "2000s",
+    "game",
+    "trailer",
+    "seedance",
+    "游戏预告",
+    "低多边形",
+    "elevencreative"
+   ],
+   "url": "https://x.com/ElevenCreative/article/2123447365638197580",
+   "stats": null,
+   "sourceNote": "来源：X · ElevenCreative @ElevenCreative，2026-11-19。发现路径：重点监控号 @ElevenCreative，2026-11-20 收录。入口：elevenlabs.io/flows。本页为结构化中文转述（原文为英文），保留五步工作流与 Seedance 2.5 模型选择，观点归原作者。",
+   "related": [
+    "ec",
+    "seedance",
+    "shortpost"
+   ],
+   "relatedNote": "互推：同作者 ElevenCreative 的《3 AI videos》讲三种跳出俗套的风格 Flows，本篇讲 2000 年代游戏风预告的五步工作流；G哥的 Seedance 教程与 Miller 的短剧后期篇同属 AI 视频实操。",
+   "rev": "96a42eb7d727",
+   "sections": [
+    {
+     "type": "paragraph",
+     "lead": true,
+     "text": "2000 年代风格的 AI 视频正在收获数百万观看。秘诀是：任何人几分钟内都能做出来。本篇是在 ElevenCreative 的 Flows 里做一条 2000 年代风游戏预告片的完整指南——用什么提示词做出低多边形 2000 年代游戏风格、哪些模型能省时间和点数、怎么用 AI 给视频加音效和音乐，以及如何把整套流程变成下一条爆款视频。"
+    },
+    {
+     "type": "heading",
+     "level": 3,
+     "text": "先看全貌：五步工作流"
+    },
+    {
+     "type": "paragraph",
+     "text": "整条流水线都在 Flows 里完成：先组建角色队伍，再为故事发生地做关键帧，然后把角色放进场景里摆好动作，接着连到视频生成节点让它动起来，最后加音乐、用合成节点把视频与音乐合起来。入口是 elevenlabs.io/flows，视频模型选 Seedance 2.5。"
+    },
+    {
+     "type": "image",
+     "url": "https://collect.tpgofighting.top/assets/images/ec2000s-1.webp",
+     "caption": "封面 · 本页设计封面（黑白版）：英文大字标题「Make a 2000s video game trailer with AI」。原文为 X Article 英文指南，配图 9 张。与同作者 ElevenCreative 的《3 AI videos you didn’t know you could generate》同属 Flows 玩法系列。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "五步工作流"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**STEP 1 组建你的队伍**：游戏没有主角、老大和跟班怎么行？新建 Flows 项目，为每个角色加一个图片生成节点，让 Claude 按给定提示词格式写提示词、描述你想要的角色，再把提示词复制进图片生成节点。",
+      "**STEP 2 解锁城市**：为故事发生地做关键帧——城市景观、房间、屋顶等，你决定哪些场景最重要。每个关键场景重复：加图片生成节点，粘贴提示词，选模型、宽高比、分辨率和质量，点击生成。",
+      "**STEP 3 接管城市（几乎）**：角色和场景都有了，在变成视频之前把角色放进正确的场景、配上正确的动作：加图片生成节点，把场景生成和角色表生成连到这个节点，插入提示词。专业提示：场景的宽高比要与最终视频一致。"
+     ]
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**STEP 4 让它动起来**：把步骤 3 的所有图片作为图片参考连到视频生成节点，插入提示词，选 Seedance 2.5 作为模型，选宽高比、分辨率和视频时长，点击运行。",
+      "**STEP 5 给故事配乐**：加一个音乐生成节点并插入提示词；如果想要纯音乐，记得关掉歌词开关；选音乐时长并运行。配乐满意后加一个合成节点，把视频和音乐连起来——任务完成，视频可以发布了。发布时记得 @ElevenCreative。",
+      "**MORE Press Play**：这不是唯一能用 ElevenCreative 做的游戏风格。文末展示了几位社区成员的作品，并问读者最想玩哪一款。ElevenCreative 每周更新 AI 创意指南。"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "heygen6",
+   "title": "HeyGen Avatar 6: Gestures on Cue",
+   "author": "HeyGen MCP @HeyGenMCP",
+   "handle": "HeyGenMCP",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 12,
+   "cover": "https://collect.tpgofighting.top/assets/covers/heygen6.webp",
+   "coverAlt": "HeyGen Avatar 6 手势踩点指南收录封面",
+   "summary": "完整长文版（英文原文）：HeyGen Avatar 6 全指南——先自然生成再只补两三个手势提示、三大输入分工（形象定常量、动作提示管身体、声音驱动表情）、手势提示词写法（一提示一手势、照抄脚本原词、描述手而非感觉）、情绪标签与幅度调节、手势不生效排查清单、HeyGen MCP 在 Claude / ChatGPT 里的接法与双人对话。与 HyperFrames（HeyGen）篇同属 HeyGen 生态。",
+   "keywords": [
+    "heygen",
+    "avatar",
+    "6",
+    "gestures",
+    "数字人",
+    "手势提示",
+    "mcp",
+    "heygenmcp",
+    "双人对话",
+    "motion",
+    "prompt"
+   ],
+   "url": "https://x.com/HeyGenMCP/article/2123555808122388594",
+   "stats": null,
+   "sourceNote": "来源：X · HeyGen MCP @HeyGenMCP，2026-11-19（经 @HeyGen 官方账号转发进入监控名单视野）。发现路径：每日监控经 @HeyGen 转发扫到，2026-11-20 收录。本页为结构化中文转述（原文为英文），保留三大输入分工、手势提示写法、排查清单与 MCP 接法，观点归原作者。",
+   "related": [
+    "hf",
+    "digitalhuman",
+    "ec"
+   ],
+   "relatedNote": "互推：HyperFrames 是 HeyGen 开源的视频工具，与本篇同属 HeyGen 生态；Lonely 的数字人 IP 篇讲不出镜做号，与 Avatar 6 的数字人玩法对照；ElevenCreative 的 Flows 系列同属 AI 视频工具。",
+   "rev": "3e4add1b3b46",
+   "sections": [
+    {
+     "type": "paragraph",
+     "lead": true,
+     "text": "HeyGen Avatar 6 的完整拆解：变了什么、怎么做第一条视频、怎么写能落在准确的词上的手势提示词，最后是从 Claude 或 ChatGPT 里通过 HeyGen MCP 做同样的视频。核心思想只有一句：先让 Avatar 6 读脚本，然后只给你在意的节拍加提示——它本来就会跟着你的话动，手势提示是留给那几个你想要「踩点」的瞬间的。"
+    },
+    {
+     "type": "heading",
+     "level": 3,
+     "text": "先看全貌：一行脚本，一行动作"
+    },
+    {
+     "type": "paragraph",
+     "text": "整个玩法按顺序是：选好个人 Avatar、引擎选 Avatar 6；脚本按你平时说话的样子写；先不加任何动作提示生成一次——Avatar 6 会读脚本自己挑手势；再给想踩点的节拍加手势提示（写清是哪几个词、做什么手势）；情绪在声音里设，声音驱动你的脸和表达；或者让 Claude / ChatGPT 通过 HeyGen MCP 把这一切都做了。大多数视频只需要两三个手势提示，不是二十个。"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**1,200 字符** — 手势提示词（motion prompt）长度上限",
+      "**3–5 个节拍** — 30 秒脚本里足够的提示数量，提示之间至少间隔几秒",
+      "**2K** — 手势库示例的制作规格：同一 Avatar、同一 Look、Avatar 6"
+     ]
+    },
+    {
+     "type": "image",
+     "url": "https://collect.tpgofighting.top/assets/images/heygen6-1.webp",
+     "caption": "封面 · 本页设计封面（黑白版）：英文大字标题「Avatar 6: Gestures on Cue」。原文为 X Article 英文长文，配图 49 张。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "三大输入：什么控制什么"
+    },
+    {
+     "type": "paragraph",
+     "text": "Avatar 6 接收三个输入：**形象**决定什么保持不变，**动作提示**移动你的身体，**声音**驱动你的脸和表达。换姿势（坐姿变站姿、更宽或更紧的景别、新角度、服装或场景）要改形象——把这类请求写进动作提示通常没用；不同的手势、或动作多与少，用动作提示就够了；情绪和表达方式，用声音。金句：把请求放进正确的框——大多数「它无视了我的提示」的时刻，是把姿势请求打进了动作提示里：站起来是一个新 Look，挥手是动作提示，听起来兴奋是声音的事。另外，视频好不好先看音频：声音不对，脸就跟着不对，先修声音。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "怎么写手势提示词"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**描述手，而不是感觉**——指令式（「wave your right hand」）或舞台指示式（「Waves at the camera with one raised hand」）都可以。",
+      "**一个提示只给一个手势**——一组词、一个动作；两个手势叠在同一组词上，会糊成两个都不是。",
+      "**提示词照抄脚本原词**——引号里的词是触发器；脚本写的是 front desk，提示就写 front desk，不要换成 reception。给长脚本串联提示时，每个提示都是同一个句式：On ‘these words’, do this；开场先用一句话交代你是谁，定下整段的能量。",
+      "**让手势对上词义**——在「Hi」上挥手、在「three things」上数数、在「thank you」上把手放在心口；动作的意思就是台词的意思，它看起来才像你。"
+     ]
+    },
+    {
+     "type": "paragraph",
+     "text": "**情绪来自声音**：表达标签写在脚本里、用方括号括起来，身体再跟上——标签负责感觉，动作提示负责手。一处只加一个标签，绝不两个并排；情绪要渐变（兴奋 → 温暖 → 严肃，比兴奋直跳悲伤更落地）。页面上的 Add motion 有 Laughing、Whispering、Surprised、Angry、Excited 五个预设；标签对公开声音与即时声音有效，专业声音不执行。**幅度**由声音和动作提示两处决定：有 less motion 的平静设置，提示词与设置重叠时以提示词为准；竖屏 9:16 两侧空间小，手势放在胸前（手放心口、数数、竖大拇指），大开合留给 16:9。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "手势不生效时怎么办"
+    },
+    {
+     "type": "paragraph",
+     "text": "大多数手势只靠动作提示就能落地。某个手势总是变成别的东西时，按这张清单往下走：检查 Look——手在画内吗、有没有做这个动作的空间？姿势变化属于形象，不属于提示；砍到一个提示一个手势，并把提示之间拉开几秒；描述形状而不是名字——「Raise a flat palm to the camera」比「tell them to stop」管用；给它看并说出来——录一小段自己做这个手势的视频、用它做一个 Avatar，手势仍写在动作提示里，几秒素材就够；最后核对提示词与脚本是否一字不差。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "在 MCP 里用 Avatar 6"
+    },
+    {
+     "type": "paragraph",
+     "text": "HeyGen MCP 是 HeyGen 官方托管的 MCP 服务器，把 HeyGen 接进 Claude、ChatGPT、Cursor 和任何支持 MCP 的应用：你用大白话要一条 Avatar 6 视频，它就在你自己的 HeyGen 账号里做出来。适用于所有 HeyGen 套餐、用套餐内点数，没有单独的 MCP 定价。在 Claude 里：点 + → Connectors → Manage connectors → Add custom connector，命名 HeyGen 并粘贴原文给出的 URL，连接后在 HeyGen 页面批准授权；在 ChatGPT 里：打开 Plugins 搜 HeyGen 添加，连接后在对话里打 @HeyGen 使用。"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**请求里写上「on Avatar 6」**——点名模型，agent 就会选它；不写，agent 替你选。",
+      "**动作提示单独一行、以「Motion:」开头**——agent 会把你的原话照样传过去。",
+      "**也可以让 agent 写提示**——贴上脚本让它按 On ‘words’, gesture 格式写，最多四个提示，先给你看、改好再生成。"
+     ]
+    },
+    {
+     "type": "paragraph",
+     "text": "**双人对话**：Avatar 6 能把两个人放进同一帧对话——播客、采访、主持加嘉宾，你把两边台词都写好、每人用各自的声音，一次生成整段对话（通过 HeyGen MCP 制作）。务必说清谁在左谁在右，左右是 agent 把声音对到脸上的依据；只支持恰好两人，一人就是普通 Avatar 6 视频，三人以上不支持。"
+    },
+    {
+     "type": "callout",
+     "text": "有效用法的收尾清单：先自然生成，看完再只补缺的提示；姿势与取景放形象、手势放动作提示、情绪放声音；一个提示一个手势、间隔几秒、用脚本原词；手势大小配声音大小；手需要空间时用腰部以上取景，特写用平静设置；声音先于视频——一条你满意的声音，比任何提示修得都多。"
+    }
+   ]
+  },
+  {
+   "id": "sites100",
+   "title": "超全 100 种建站方式，从零代码、笔记建站到 Rust，总有一种适合你",
+   "author": "想风 @xaiwind",
+   "handle": "xaiwind",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 15,
+   "cover": "https://collect.tpgofighting.top/assets/covers/sites100.webp",
+   "coverAlt": "超全 100 种建站方式收录封面",
+   "summary": "完整长文版：100 种建站方式九类全名单——零代码平台、AI 建站、笔记建站、开源 CMS、静态站点生成器（按语言分）、前端框架、后端语言、电商单页链接页、极客玩法，附上线方式（GitHub Pages / Cloudflare Pages / Vercel）与六个常见坑。判断标准只有三个：会不会写代码、想花多少钱、内容放在哪写。与 Sukiea1008《网页上线》互为全景与最小闭环。",
+   "keywords": [
+    "建站",
+    "100",
+    "种",
+    "零代码",
+    "wordpress",
+    "hugo",
+    "astro",
+    "next.js",
+    "notion",
+    "quartz",
+    "rust",
+    "xaiwind",
+    "想风",
+    "上线"
+   ],
+   "url": "https://x.com/xaiwind/article/2123394871222485023",
+   "stats": null,
+   "sourceNote": "来源：X · 想风 @xaiwind，2026-11-19（经 @leaf_sanren 转发进入监控名单视野）。发现路径：每日监控经 @leaf_sanren 转发扫到，2026-11-20 收录。作者自述：想风，一个关注出海与 AI、AIGC 的创作者；本文基于 AI 辅助与个人实践融合创作，持续维护。本页为结构化中文转述，保留 100 种方式的完整名单与六个坑，观点归原作者。",
+   "related": [
+    "weblaunch",
+    "obsi",
+    "aicash"
+   ],
+   "relatedNote": "互推：Sukiea1008 的《网页上线：最快路径》是最小闭环版（GitHub Pages 三步），本篇是 100 种方式的全景地图；同作者群的 Obsidian 起步篇与 AI 内容创作变现篇同属新手向实操。",
+   "rev": "d2fa4088fb9b",
+   "sections": [
+    {
+     "type": "paragraph",
+     "lead": true,
+     "text": "想做个网站，搜一圈下来 WordPress、Hugo、Next.js、Notion、Webflow……名字一个比一个多，选择太多，最后可能一个都没开始。这篇把 100 种建站方式分成九类，从拖拖拽拽的零代码，到笔记一键发布，再到用 Go、Python、Rust 手写，每一种讲清是什么、适合谁。判断标准就三个：会不会写代码、想花多少钱、内容放在哪写——建站方式没有好坏，只有合不合适。"
+    },
+    {
+     "type": "heading",
+     "level": 3,
+     "text": "先看全貌：九类 100 种，外加上线与避坑"
+    },
+    {
+     "type": "paragraph",
+     "text": "零代码平台 1–12、AI 建站 13–20、笔记建站 21–30、开源 CMS 自己部署 31–42、静态站点生成器 43–62（按编程语言分）、前端框架 63–74、后端语言 75–88、电商·单页·链接页 89–94、极客玩法 95–100。后面还有两节：建好了放哪（上线方式）与六个常见坑。不用全看，先按三个判断标准找到自己那一格，再跳到对应类别。"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**100 种** — 建站方式总数，分九类编号排列",
+      "**3 个标准** — 会不会写代码、想花多少钱、内容放在哪写",
+      "**6 个坑** — 文末常见坑清单：拖延、平台锁定、备案、更新、安全、免费额度"
+     ]
+    },
+    {
+     "type": "image",
+     "url": "https://collect.tpgofighting.top/assets/images/sites100-1.webp",
+     "caption": "封面 · 本页设计封面（黑白版）：大字标题「超全 100 种建站方式：从零代码、笔记建站到 Rust」。原文为 X Article 长文，配图 33 张。与 Sukiea1008 的《网页上线：最快路径》互为大小两版：那篇给最小闭环，这篇给全景地图。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "不用写代码：零代码、AI 建站、笔记建站（1–30）"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**零代码平台（1–12）**——注册账号、选模板、拖拽、绑定域名就上线；代价是按月付费，数据和样式都在别人平台上。WordPress.com（官方托管版，和开源 WordPress 是两回事）、Wix、Squarespace（模板以审美出名）、Webflow（可视化版前端开发，门槛更高）、Framer、Carrd（只做单页）、Shopify（跨境电商事实标准）、Google Sites、Substack、beehiiv、Hashnode、Strikingly。",
+      "**AI 建站（13–20）**——这两年最大的变化：用大白话描述想要什么，AI 生成页面；和零代码平台最大的区别是产出的是真代码、可以带走。v0、Bolt.new、Lovable、Replit、Claude Code、Codex、Cursor；Durable 是例外，它产出的是平台里的网站，不是代码。",
+      "**笔记建站（21–30）**——笔记写好了直接变成网站，写作在笔记软件里，发布是顺手的事。Notion Sites、Super、Obsidian Publish、Quartz（开源免费，双链、关系图、全文搜索都有）、Obsidian Digital Garden、Logseq、TiddlyWiki（整个网站就是一个 HTML 文件）、语雀、飞书知识库、Craft。"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "自己部署：CMS 与静态生成器（31–62）"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**开源 CMS（31–42）**——带后台的网站，登录后台写文章、传图片，不用碰代码；开源意味着免费、数据在自己手里，代价是要自己买服务器、自己更新、自己负责安全。WordPress（全世界最多网站在用）、Ghost、Halo、Typecho、Drupal、Joomla、Grav、Strapi、Directus、Payload、Decap CMS、WriteFreely。",
+      "**静态站点生成器（43–62）**——把 Markdown 文件「编译」成一堆 HTML；没有数据库、没有后台，免费托管、速度快、几乎不会被黑。用什么语言写的生成器，决定了改主题、写插件时要碰什么语言。Go 的 Hugo（几千篇文章秒级生成）；Ruby 的 Jekyll、Bridgetown；JavaScript 的 Hexo、Eleventy、Astro（当下最火的内容站框架）、VitePress、VuePress、Gatsby、Docusaurus、Lume；Python 的 MkDocs、Sphinx、Pelican、Nikola；Rust 的 Zola、mdBook；以及 Hakyll、Quarto、Franklin.jl。"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "写代码：前端框架与后端语言（63–88）"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**前端框架（63–74）**——网站不光是内容，还能有交互：登录、表单、搜索、动态数据。纯 HTML + CSS（一个 index.html 就是一个网站，学建站从这里开始最扎实）、Vite + React、Next.js、Nuxt、SvelteKit、React Router（原 Remix）、SolidStart、Qwik、Angular、Fresh、Hono、htmx（不写 JavaScript 也能做交互，是对前端框架的一记反叛）。",
+      "**后端语言（75–88）**——服务器端用模板拼出 HTML，数据库、登录、后台全在一个项目里，建站顺便学一门后端语言。Django、Flask、FastAPI、Ruby on Rails、Laravel、Go 标准库 net/http（不装任何框架就能建站）、Spring Boot、Ktor、ASP.NET Core、Axum、Leptos、Phoenix、Express、Vapor。"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "电商、极客玩法、上线与六个坑（89–100）"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**电商·单页·链接页（89–94）**——WooCommerce、Medusa、Saleor、Gumroad、Linktree、GitHub 个人主页 README（程序员的第二张名片）。",
+      "**极客玩法（95–100）**——不为效率，为乐趣：Emacs Org-mode、Shell 脚本、Streamlit、PocketBase（Go 写的单文件后端）、OpenResty、Elm。",
+      "**上线方式**——GitHub Pages、Cloudflare Pages、Netlify、Vercel、Railway、Render、Fly.io。最省事的组合：代码推到 GitHub，连上 Cloudflare Pages 或 Vercel，每次推送自动上线，再配一个自己的域名。"
+     ]
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**框架换来换去** — 建站最大的坑不在技术，在拖延；先用最简单的方式上线",
+      "**平台锁定** — 长期要写的内容，尽量用 Markdown 存一份在自己手里",
+      "**大陆备案** — 网站放在中国大陆服务器上，要先做 ICP 备案才能用域名访问",
+      "**WordPress 不更新** — 用的人最多也最常被攻击；核心、主题、插件及时更新，用不到的直接删",
+      "**单页应用 SEO** — 纯前端渲染搜索引擎可能只抓到空页面；要 SEO 选静态生成或服务端渲染",
+      "**免费额度用超** — 上线前看一眼平台限额说明，能设消费上限的就设上"
+     ]
+    },
+    {
+     "type": "callout",
+     "text": "100 种方式真正需要的只有一种。不会代码，选零代码平台或 AI 建站；爱记笔记，选 Quartz 或 Notion；想学技术，从一个 index.html 开始。先上线，再优化。"
+    }
+   ]
+  },
+  {
+   "id": "gptwrite",
+   "title": "ChatGPT 保姆级写作教程｜从源头解决人机感和 AI 味 ✏️",
+   "author": "小晚不在 @bbkirstry",
+   "handle": "bbkirstry",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 14,
+   "cover": "https://collect.tpgofighting.top/assets/covers/gptwrite.webp",
+   "coverAlt": "ChatGPT 保姆级写作教程从源头解决 AI 味收录封面",
+   "summary": "完整长文版：不用固定 Prompt、半小时写一篇文章的方法——真的聊天而不是发「帮我写篇文章」指令。AI 味有时是理解问题：先让 ChatGPT 认识你（背景四件事、两篇满意加一篇不满意的旧文、视角思路语言三层、开启 Memory），从真实感受开始聊，再分明线与暗线目的定结构，改稿三查（观点、结构、语言）与长期协作复盘。附「赛博小晚」与排版两个 Skill。",
+   "keywords": [
+    "chatgpt",
+    "写作",
+    "ai味",
+    "人机感",
+    "聊天",
+    "memory",
+    "明线",
+    "暗线",
+    "改稿",
+    "小晚",
+    "bbkirstry",
+    "赛博小晚"
+   ],
+   "url": "https://x.com/bbkirstry/article/2123419503417544831",
+   "stats": null,
+   "sourceNote": "来源：X · 小晚不在 @bbkirstry，2026-11-19（经 @0xlangeai 转发进入监控名单视野）。发现路径：每日监控经 @0xlangeai 转发扫到，2026-11-20 收录。作者 Skill：思考助手「赛博小晚」（github.com/cyberxiaowan/cyber-xiaowan）、长图文排版 Skill（github.com/cyberxiaowan/xiaowan-wechat-layout-skill）。本页为结构化中文转述，保留四步实操与改稿三查，观点归原作者。",
+   "related": [
+    "aicash",
+    "naval",
+    "grokbot"
+   ],
+   "relatedNote": "互推：Ryrenz 的 AI 内容创作变现入门讲五种形式的总览，本篇讲其中长文写作的具体方法；《纳瓦尔宝典》学习系统同属把 AI 用进学习与表达；lauren 的 Grok Bot 自动化篇同属「把方法教给 AI 执行」一组。",
+   "rev": "8db7fb223e4f",
+   "sections": [
+    {
+     "type": "paragraph",
+     "lead": true,
+     "text": "作者用 ChatGPT 写文章非常丝滑：写出一篇文章只需要半个小时，甚至没有一套固定的写作 Prompt——很多时候只是突然想到一件有意思的事，打开 ChatGPT 开始聊天，聊着聊着就有一篇自己还挺满意的文章。这篇分享的方法可能和很多教程都不一样：不需要先安装写作 Skill，也不用研究复杂的 Prompt，只需要打开 ChatGPT 的 Chat 开始聊天。注意，是真的聊天，不是往聊天框里输入一条「帮我写篇文章」的指令，这两件事有着天壤之别。"
+    },
+    {
+     "type": "heading",
+     "level": 3,
+     "text": "先看全貌：AI 味有时是理解问题，不是语言问题"
+    },
+    {
+     "type": "paragraph",
+     "text": "核心观点：我们高估了互联网写作的门槛，却低估了 AI 理解一个人的难度。大部分互联网内容创作首先解决的是表达问题；但生成两千字和理解一个人真正想表达什么完全是两回事。很多「去 AI 味」的方法只是在文章写出来以后替换几个词，可如果一开始就没有弄清楚作者真正想说什么，再怎么润色也很难让文章长出自己的味道。全文四步实操：让 ChatGPT 认识你 → 从真实感受开始聊 → 从聊天到文章（明线与暗线目的）→ 先定结构再写正文、改稿三查。"
+    },
+    {
+     "type": "image",
+     "url": "https://collect.tpgofighting.top/assets/images/gptwrite-1.webp",
+     "caption": "封面 · 本页设计封面（黑白版）：大字标题「从源头解决人机感和 AI 味：先聊天，再成文」。原文为 X Article 长文，配图 9 张。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "为什么一让 AI「写文章」，它就开始有人机味？"
+    },
+    {
+     "type": "paragraph",
+     "text": "如果你直接告诉 ChatGPT「帮我写一篇关于 AI 时代个人成长的文章，1500 字，语言自然，有感染力」，你可能很快得到一篇结构完整、语言流畅的文章，但它大概率会出现特别熟悉的人机感表达：「在这个快速变化的时代……」「我们需要重新审视……」「真正重要的不是……而是……」。作者后来意识到这可能和我们给 AI 的任务有关：当你要求它「写一篇文章」，它会倾向于生成一篇符合常见文章形式的作品；但它不知道你为什么想讲这件事，也不知道哪些细节对你来说特别重要，于是很多具体的观察就容易被标准化的表达代替。"
+    },
+    {
+     "type": "paragraph",
+     "text": "换一种方式：打开 ChatGPT 告诉它「我最近发现一件挺有意思的事，但我不知道该怎么分享给别人，我们一起聊一下」，然后讲讲自己经历了什么、为什么觉得好玩、有哪些没想明白的地方。整个过程你们一直在关注那件具体的事，没有人急着制造金句，也没有人急着升华主题。作者觉得 Chat 最妙的地方，是它允许你在还不知道自己想说什么的时候就开始交流。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "让 ChatGPT 认识你，建立长期协作的上下文"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**先给 Chat 一些关于自己的背景**——新建一个普通聊天，告诉它四件事：身份经历、兴趣优势、表达偏好、创作目标。就像认识一个新朋友一样，一边交流一边让它认识你。",
+      "**给它看你以前写过的文章**——最好找两篇自己很满意的文章，再找一篇不满意的（最好是你自己写的而不是 AI 写的），让它结合具体句子分析，不要只说「很真诚、很有个人风格」。作者认为表达有三个很重要的层次：视角（你关心什么、看到了什么）、思路（你为什么这么想）、语言（你平时怎么说话）——让 AI 搞清楚这三个东西，比单纯模仿你的口头禅更重要。",
+      "**开启 Memory**——在设置里的 Personalization（个性化）里查看并开启；但 Memory 不等于完整保存每次聊天，重要的文章、创作资料和项目背景最好自己也保留一份，并定期让 Chat 重新梳理它对你的理解。"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "从真实感受开始聊"
+    },
+    {
+     "type": "paragraph",
+     "text": "请你先忘掉「我要写文章」这件事。作者教朋友时发现，问「你想表达什么」其实不太好回答；改成问「你感受到了什么？觉得什么好玩？这是什么活动？以及你觉得什么东西很重要？」就容易回答多了。可以直接复制你想讨论的聊天记录、会议转写和零散笔记帮助它补充上下文。如果聊完还是不知道自己究竟想说什么，可以问它「你觉得这件事情有什么有意思的地方？」「你听完以后，对什么最好奇？」——如果它理解错了直接反驳；很神奇，有时候它理解错了，作者反而会因为急着纠正突然想明白自己真正想说什么。不要把 AI 对你的理解当成标准答案；也不需要让每次聊天都必须产出一篇文章，有些聊天可能只是让你想明白了一件事，这样也很好。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "从聊天到文章：明线与暗线"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**明线目的**——你到底能为读者提供什么？必须给读者具体的操作步骤、案例和判断标准；如果讲了半天最后读者还是不知道怎么操作，这篇教程就是不合格的。",
+      "**暗线目的**——你希望读者怎样认识你、认识到你的什么？明线决定读者为什么愿意看，暗线决定他看完以后会怎样记住你。当然这不是强行宣传自己：你做过什么、关心什么、为什么这样判断，本身就能让读者逐渐认识你。注意不要为了塑造个人 IP 编造经历、夸大能力，或者强行给文章升华。"
+     ]
+    },
+    {
+     "type": "paragraph",
+     "text": "把这些目标交给 Chat，再讨论结构：让它先根据讨论过的观点和真实案例整理文章结构（每一部分讲清楚什么、保留哪些细节，先不要写正文）。等结构基本满意再让它整理初稿；写教程还可以补充一句：「假设读者完全没有经验，帮我检查一下，有哪些操作步骤我讲得太笼统。」写作过程中发现新观点，就继续聊、继续调整——写文章本身也是继续思考的一部分。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "改稿三查与长期协作"
+    },
+    {
+     "type": "paragraph",
+     "text": "很多人觉得 AI 写出来的文章不自然，就反复要求「去掉 AI 味」「再有活人感一点」，但到底哪里不自然？作者建议从三个地方检查：**观点**——是不是你真正想说的，有没有把一次个人经历写成普遍规律；**结构**——读者能不能顺着理解，有没有重复解释、说了半天却没有提供新信息；**语言**——这句话你自己会不会这样说，如果不会，就改。反馈越具体越好：「这句话不是我的意思」「前面两段很好，全部保留，只修改第三段」——不要动不动让 AI 全文重写；每次修改都应该解决一个具体问题，而不只是换一种好听的说法。"
+    },
+    {
+     "type": "paragraph",
+     "text": "长期协作的习惯：每次创作以后都回头看看自己究竟学会了什么，把初稿和终稿一起给 Chat，让它总结这次修改中最重要的三个变化。还有一点提醒：不要为了让 AI 记住你的风格，就把自己固定成某一种永远不变的样子——你会改变，审美会成长。结尾作者想跟正在焦虑的朋友说：你不需要每天追逐新的技术来证明自己没有落后；AI 能帮你完成很多事情，但生活依然需要你亲自去经历。"
+    },
+    {
+     "type": "quote",
+     "text": "也许 AI 时代最值得被释放的不是生产力，而是那些过去因为不够熟练、不够专业、不够自信而始终没有机会被表达出来的想法。"
+    }
+   ]
+  },
+  {
+   "id": "manus",
+   "title": "AI 时代如何做产品｜Manus张涛北大分享逐字稿",
+   "author": "张涛（Manus 联合创始人、CPO）· Viviennn @whereisvivien",
+   "handle": "whereisvivien",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 20,
+   "cover": "https://collect.tpgofighting.top/assets/covers/manus.webp",
+   "coverAlt": "Manus 张涛北大分享 AI 时代如何做产品收录封面",
+   "summary": "完整长文版：Manus 联合创始人张涛在北大的分享——Chatbot 的天花板、停掉做了 7 个月的 AI 浏览器、从 Cursor 看到通用 Agent、面向非技术用户与透明度设计、面向六个月后的模型（Less structure, more intelligence）、用付费识别真实价值、坚持通用与邀请码背后的 800M TPM 算力账，附给年轻创业者的三条建议。与 lauren 的 Grok Bot 自动化篇、Chromium Agent 篇、HyperFrames Harness 篇互推。",
+   "keywords": [
+    "manus",
+    "张涛",
+    "北大",
+    "通用",
+    "agent",
+    "产品",
+    "harness",
+    "付费",
+    "邀请码",
+    "viviennn",
+    "cursor",
+    "浏览器",
+    "少结构多智能",
+    "mens",
+    "et",
+    "manus"
+   ],
+   "url": "https://x.com/whereisvivien/article/2123103532182282353",
+   "stats": "约 8.9 万浏览；全文约 1.5 万字逐字稿",
+   "sourceNote": "来源：X · Viviennn @whereisvivien 发布，演讲者 张涛（Manus 联合创始人、CPO），2026-11-19（约 8.9 万浏览；全文约 1.5 万字逐字稿）。本页为结构化中文转述摘要，保留 11 个小节的脉络与全部关键数字（800M TPM、200–1000 倍、4000–5000 美元、ARR 超 4000 万近 5000 万美元、12–15 美元等），不做全文转载，观点归演讲者与原作者。",
+   "related": [
+    "grokbot",
+    "chromium",
+    "hf"
+   ],
+   "relatedNote": "互推：lauren @poteto 那篇讲用 Grok Bot 做自动化的通用方法论，Kyle Jeong 那篇讲用 agent 一天升级 4,000 万行 Chromium，HyperFrames 那篇讲自研 harness 如何胜过 Claude Code——与本篇同属「Agent 怎么做成产品」一组，对照着读。",
+   "rev": "1ac93979680e",
+   "sections": [
+    {
+     "type": "paragraph",
+     "lead": true,
+     "text": "这是 Manus 联合创始人、CPO 张涛在北京大学的一次分享：为什么 Chatbot 的产品价值会被用户的提问能力锁死、为什么团队在发布前夜停掉了做了 7 个月的 AI 浏览器、又如何从 Cursor 身上看到通用 Agent，并把它做成 Manus。全文约 1.5 万字逐字稿，本页按原分享脉络整理成 11 节结构化摘要。"
+    },
+    {
+     "type": "heading",
+     "level": 3,
+     "text": "先看全貌：一条从「形态判断」走到「产品纪律」的线"
+    },
+    {
+     "type": "paragraph",
+     "text": "整场分享可以压缩成一条线：先判断形态——Chatbot 把模型价值的上限交给了用户的提问能力，浏览器则把人的日常行为本身变成了意图输入；再下注方向——停掉已有亮点的 AI 浏览器，从 Cursor 的长程规划与工具调用里看到通用 Agent，2024 年 12 月立项、2025 年 3 月 5 日发布；然后是做产品的纪律——面向非技术用户、把透明度做成功能、面向六个月后的模型设计、用付费而不是免费补贴识别真实价值、坚持通用抢占一生一次的品牌心智；最后落到人——云端异步沙箱围绕用户生活设计，邀请码背后是真实的算力账，以及给年轻创业者的三条建议。原文约 8.9 万浏览。"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**800M TPM** — 上线三天若全量放开，需求约 800M TPM（每分钟 token 数）",
+      "**200–1000 倍** — Agent 单个 DAU 消耗的 token，是 Chatbot 的 200–1000 倍",
+      "**4000–5000 美元** — 平台核心用户每月花 4000–5000 美元",
+      "**12–15 美元** — 发布唯一额外花费：约 12–15 美元的 CapCut 会员"
+     ]
+    },
+    {
+     "type": "image",
+     "url": "https://collect.tpgofighting.top/assets/images/manus-1.webp",
+     "caption": "封面 · 本页设计封面（黑白版）：左侧大字「AI 时代如何做产品」，右侧线条图——上方圆环写着 MIND（头脑），下方是一只手（HAND），呼应 Manus 得名的 MIT 校训 Mens et Manus（心智与双手）。原文为 X Article 长文逐字稿，无内嵌图片。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "Chatbot 的天花板：价值被提问能力锁死"
+    },
+    {
+     "type": "paragraph",
+     "text": "张涛想做的终极形态，是一个 **7×24 小时不间断运行、不需要人持续输入、自己不断推理和输出**的产品——因为模型智能的上限已经超过人类。加入 Manus 团队前，他把核心问题归结为一点：Chatbot 这个形态本身限制了模型的能力表达。"
+    },
+    {
+     "type": "paragraph",
+     "text": "问题出在价值的激发方式上：**产品价值的上限被用户锁住了**。用户必须既会提问、又有意愿提问，价值才激发得出来；不会提问，价值就极小。换句话说，Chatbot 把最难的一步——把模糊意图变成清晰输入——留给了用户。"
+    },
+    {
+     "type": "paragraph",
+     "text": "浏览器是反例：写邮件、搜索、浏览网页，这些行为本身就是意图表达，都能成为模型的输入，并在背后产生大量推理需求。形态之争的本质，是**谁来承担「表达意图」的成本**：用户承担，产品就挑人；产品承担，智能才能扑面而来。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "停掉 AI 浏览器：时间比沉没成本重要"
+    },
+    {
+     "type": "paragraph",
+     "text": "2024 年 10 月，团队的 AI 浏览器已经做好、内部测试也有亮点。但推荐给家人朋友时，问题暴露了：大家太熟悉浏览器，第一反应是问「我在 Safari / Chrome 里的那个功能去哪儿找」。**新体验嫁接在旧体验上，用户永远拿旧体验的基准线对标你**；初创团队想在有 20 多年成熟基准的产品上对齐苹果、Google 的基础体验，几乎不可能，强行做只会挤占 AI 部分的开发。"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**30 人** — 拍板停掉浏览器时，公司的团队规模",
+      "**7 个月** — AI 浏览器项目已经投入的时间，发出来会惊艳市场"
+     ]
+    },
+    {
+     "type": "paragraph",
+     "text": "创始人 Red 在 9、10 月就拍板停掉。当时公司只有 30 人、账上钱不多，项目已投 7 个月，但一旦发布，团队可能陷进去 3 到 6 个月。张涛的判断是：**创业最宝贵且不能浪费的是时间，钱反而最容易解决**，浪费时间会错过市场窗口。"
+    },
+    {
+     "type": "quote",
+     "text": "回头看，停掉浏览器才有了后来的 Manus；AI 浏览器赛道至今没有真正跑出来的产品——要做新体验，最好创造全新体验，不要做「AI + 旧体验」。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "从 Cursor 看到通用 Agent：长程规划 + 工具调用"
+    },
+    {
+     "type": "paragraph",
+     "text": "停掉浏览器后，2024 年 7 月爆火的 Cursor 是现象级产品。张涛作为非专业程序员，拿它干了很多别的事——处理报销、MP4 转 MP3、辅助写小说——从中感受到 Claude 3.5 Sonnet 的真正威力不在编程，而在**自主规划与行动能力**："
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**长程规划（Long-horizon Planning）**——不一轮草率完成任务，而是主动调工具、向用户提问、等有把握再执行；",
+      "**工具调用（Tool Use）**——能真正动手操作，而不只是生成文字。"
+     ]
+    },
+    {
+     "type": "paragraph",
+     "text": "当时全世界都在押注编程 Agent，他们的判断相反：世界不需要更多工程师，工程师已有足够多工具；这个能力解锁后是**给普通人的通用能力**，编程只是解决通用场景的中介。于是 2024 年 12 月立项、两个多月开发，2025 年 3 月 5 日发布时发现，几乎只有他们在做这个方向。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "面向非技术用户：透明度本身就是产品功能"
+    },
+    {
+     "type": "paragraph",
+     "text": "早期 Manus 长得像 Cursor，三栏布局太专业；投资人提醒后改成**两栏**，因为目标用户是非技术人群。2025 年 1 月 5 日调通第一版原型后，张涛在朋友圈征集「如果你有一个本科水平的实习生，会交代什么事」，从 100 多位朋友处收集了 **400 多个任务**，去掉 100 多道需要具身智能的（如买奶茶），剩下 300 多条成了最早的评测集——而 Agent 的完成方式屡屡超出想象。"
+    },
+    {
+     "type": "paragraph",
+     "text": "但冲击太强，只给结果，用户会觉得是假的。于是团队做了判断：**透明度本身必须成为产品功能**。第一版的两个关键设计，后来成了所有 AI Agent 的范式："
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**DESIGN 1 逐步展示执行过程**：推进任务、调工具、访问网页、写笔记写代码——每一步都让用户看见。",
+      "**DESIGN 2 会话回放（Session Replay）**：分享后对方不用邀请码、不用充值，就能回看完整执行过程、感受到惊喜瞬间。",
+      "**RATIO 智能八成，界面两成**：产品智能占八成，这两个面向增长的界面设计，对初期引爆同样关键。"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "发布的真相：产品创新是根本，创始人要亲自讲故事"
+    },
+    {
+     "type": "paragraph",
+     "text": "外界以为 3 月的发布买了 KOL、做了营销事件。张涛说「0 元发布」不够严谨：唯一额外花的钱，是自己拍发布视频时导出 4K 要收费，花**约 12–15 美元**买了一个月 CapCut 会员——相机是索尼 A7C II，镜头找真格雨森借的 50mm f/1.2 GM，剪了两天两夜。"
+    },
+    {
+     "type": "paragraph",
+     "text": "核心是**产品创新**：在合适的时机、用合适的产品形态告诉世界，模型的能力边界到了哪里。他们是最早做 Harness（Agent 执行框架）的团队之一，把模型能力逼到极限——Anthropic 团队都不相信只用了他们的模型。视频重要，不是因为形式，而是**创始人亲自拍、亲自讲**：创业早期营销必须创始人亲自参与，外包的信息失真严重。"
+    },
+    {
+     "type": "paragraph",
+     "text": "一个常被模仿的细节：后来满大街创业公司模仿「创始人坐沙发、背后两棵绿植」的机位，其实那只是共享办公园区里唯一背景干净、不嘈杂的角落；视频中间甚至有一帧跳了一下，是因为首席科学家讲话时，背后保洁阿姨拖着地走过。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "面向六个月后的模型设计：少结构，多智能"
+    },
+    {
+     "type": "paragraph",
+     "text": "做 AI 应用，要**面向六个月后的模型能力设计**；不要等模型更新了才想着做应用，那时已经晚了。首席科学家强调的原则是「**Less structure, more intelligence**」（少一些预设结构，多一些模型自主智能）：第一版 Harness 不用固定工作流规定每一步，让模型自己决定下一步；坚持单智能体路线，不做多智能体。"
+    },
+    {
+     "type": "callout",
+     "text": "好处是产品随模型能力上升而水涨船高：Claude 3.7 发布当晚，Harness 一行代码没改，只把接口从 3.5 V2 切到 3.7，评测集上 20%–30% 未解决的问题，一下就解决了。"
+    },
+    {
+     "type": "paragraph",
+     "text": "所以不要老为现在模型不好的地方修修补补——那些问题最终都会被解决；要想的是六个月后模型什么样、用什么产品形态去匹配。现场分享的一个前瞻机会是：Seedance 这类视频生成模型的延迟降到**一秒以内**时，它就不再是视频工具，而是**新一代操作系统**，围绕它提前准备，是很好的创业机会。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "用付费识别真实价值：免费补贴是陷阱"
+    },
+    {
+     "type": "paragraph",
+     "text": "不做 Chatbot 的另一个原因，是它挑人——只有很懂的用户才能用出价值；新产品要尽量**降低输入成本**，让用户在日常生活中不断感受到智能。而在变现上，张涛的判断更直接：**免费补贴是 AI 时代最大的陷阱**，过去两三年中国 AI 创业最大的误区，就是沿用移动互联网的免费补贴思维。坚持付费的理由有三条："
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**智能够好，就有人付费**——平台核心用户每月花 4000–5000 美元；",
+      "**免费用户的需求是噪音**——大量免费需求会分散注意力、消耗时间；",
+      "**付费用户的反馈才可信**——留下提反馈的，都是已用钱投票、真正感受到价值的人。"
+     ]
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**4000–5000 美元 / 月** — 平台核心用户的每月花费",
+      "**超 4000 万 近 5000 万 美元** — 2025 年 4 月首月 ARR（3 月底才开始收费）"
+     ]
+    },
+    {
+     "type": "paragraph",
+     "text": "Manus 发布时没上付费功能，2025 年 3 月底才收费，4 月首月 ARR 就超过 4000 万、接近 5000 万美元，关键就是产品让用户感受到了扑面而来的智能。大厂尤其容易走这条邪路：上线第一天就能拿一两千万补贴，一旦做出 10 万 DAU 就变成 KPI，再没人敢做转收费的判断。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "坚持通用：品牌心智一生只有一次占位机会"
+    },
+    {
+     "type": "paragraph",
+     "text": "发布时，Manus 自称全世界第一个通用 AI Agent。很多投资人建议专注一个场景——网站生成、幻灯片生成——他们没听。回头看，**坚持通用是关键战略判断**：品牌心智很难花钱买到，用户心中的认知，花几亿美金都难改变；因为一开始就打出通用，后来推网站、幻灯片、视频等指令都顺理成章，用户觉得「Manus 什么都能干」很正常，而垂类竞品想拓展通用任务时，用户会觉得奇怪。"
+    },
+    {
+     "type": "paragraph",
+     "text": "内部矩阵（横轴付费、纵轴满意度）右上角**最满意的用户不是码农，而是企业管理者**——CEO、小老板、部门主管：杂事最多，第一次有 AI 工具什么事都能解决、什么事都能商量。但张涛也提醒：不是每个人都要做通用——他们能做成，是因为当时没人做、抢先占住了心智，后面再想做，很难。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "围绕用户生活设计：云端异步 + 邀请码的真实原因"
+    },
+    {
+     "type": "paragraph",
+     "text": "面向非技术人群的 UX 做了三件事：一是**透明执行过程**建立信任；二是**异步云端执行**——每个任务配云端沙箱，手机布置任务后放回口袋、等完成再看，不用一直亮屏盯着；三是让过程本身有**传播力**，会话回放做得有叙事感。"
+    },
+    {
+     "type": "paragraph",
+     "text": "早期用邀请码不是营销套路，原因很现实。第一是钱：公司账上只剩**八九百万美元**，高峰期一天要烧 50 万美元，完全放开可能一周就撑不住。更关键的是算力："
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**200–1000 倍** — Agent 单个 DAU 消耗的 token，是 Chatbot 的 200–1000 倍",
+      "**800M TPM** — 上线三天若全放开，需求约 800M TPM",
+      "**10M–20M TPM** — 当时亚太头部聊天产品的 TPM 量级，云厂商根本给不出 800M"
+     ]
+    },
+    {
+     "type": "paragraph",
+     "text": "后来凑巧拿到几百 M 额度，撑过第一个月；5 月取消邀请码时，各家才开始有三五十 M 的储备。邀请码的真相不是饥饿营销，而是**算力供给跟不上 Agent 的消耗曲线**。"
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "给年轻创业者的三条建议"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**ADVICE 1 全球化从第一天起**：语言障碍已被大模型大幅降低，团队三人中两人没有海外经历，也能面向全球。全球化不等于只做欧美：巴西是用户最多的地区、美国是收入贡献最大的市场，中东、欧洲、日韩、东南亚、非洲都有用户。内部严禁说「国外」——「国外 / 国内」的二元划分，会掩盖各地真实的机会分布。",
+      "**ADVICE 2 少看自媒体，亲自用产品**：自媒体的驱动逻辑是流量和情绪，靠刺激多巴胺操纵读者，与现实割裂。面试 AI PM 时最夸张的候选人，手机上根本没装常说的 AI 工具、只有两三个任务——做 AI 的前提，是自己深度使用、感受到模型和产品的边界。",
+      "**ADVICE 3 发现问题，拥抱未知**：最缺的不是技术和执行，而是发现问题、定义问题的能力。创业没有确定性卷子，绝大多数决策时都没想明白，先行动、再动态调整；总想找一劳永逸答案的人，听到「没有秘密、必须先动手」会以为你在藏私。"
+     ]
+    },
+    {
+     "type": "heading",
+     "level": 2,
+     "text": "结语：让头脑长出双手"
+    },
+    {
+     "type": "paragraph",
+     "text": "Manus 得名于 MIT 校训 **Mens et Manus**（拉丁语：Mind and Hand，心智与双手）。大模型厂商都在做 Mind（头脑），但 2024 年底那么强的头脑产生不了大影响，就是因为只有大脑、没有手；**Manus 就是大模型的手**，让思考作用到真实世界。"
+    },
+    {
+     "type": "quote",
+     "text": "所有的思考都需要实践。创业最重要的是实践、面对真实社会、对世界好奇、解决还没解决的问题，而不是在 PPT 推演和融资演示上扮演创业者。"
+    },
+    {
+     "type": "list",
+     "ordered": false,
+     "items": [
+      "**这篇和 lauren 的 Grok Bot 篇是什么关系？** 同属 Agent 产品方法论：lauren @poteto 那篇讲普通人如何用 Grok Bot 做自动化（目标 + 流程），本篇讲通用 Agent 产品本身如何被判断、被设计、被定价——一篇讲怎么用 Agent，一篇讲怎么做 Agent。本站文末相关文章第一篇就是它。",
+      "**这篇和 Chromium 篇、HyperFrames 篇呢？** Kyle Jeong 那篇讲 Browserbase 如何用编码 agent 在一天内升级 4,000 万行 Chromium，是 Agent 在真实工程流水线里的实战；HyperFrames 那篇讲自研 harness 如何胜过 Claude Code，与本篇「Less structure, more intelligence」的 Harness 观正面对照。三篇互推。",
+      "**邀请码到底是不是营销？** 按分享的说法不是：账上只剩八九百万美元、高峰期一天烧 50 万美元，且 Agent 单 DAU 的 token 消耗是 Chatbot 的 200–1000 倍，上线三天全放开约需 800M TPM，当时云厂商根本给不出来。"
+     ]
+    }
+   ]
+  },
   {
    "id": "chromium",
    "title": "How we use agents to patch, build, and deploy 40,000,000 lines of Chromium code in <1 day",
@@ -33,11 +1652,11 @@
    "stats": "约 6,523 浏览",
    "sourceNote": "来源：X · Kyle Jeong @kylejeong（Browserbase），2026-11-19（约 6,523 浏览）。发现路径：重点监控号 @browserbase 转发，2026-11-19 每日监控扫到。本页为结构化中文转述，保留补丁分类与 agent 重放循环、bfcache 回归与 HTTPS-First 两个案例、缓存与链接器的关键数字及部署验证方法，不做全文翻译，观点归原作者。",
    "related": [
-    "grokbot",
-    "morry",
-    "addy"
+    "manus",
+    "hf",
+    "grokbot"
    ],
-   "relatedNote": null,
+   "relatedNote": "互推：Manus 张涛那篇讲通用 Agent 的产品方法论（少结构、多智能，与本篇的 agent 流水线互为表里），HyperFrames 那篇讲 harness 如何胜过 Claude Code，lauren 那篇讲 Grok Bot 自动化方法论。",
    "rev": "f23beb559060",
    "sections": [
     {
@@ -242,11 +1861,11 @@
    "stats": "456 回复 / 693 转帖 / 6,211 点赞 / 11,361 收藏 / 约 73.9 万浏览",
    "sourceNote": "来源：X · lauren @poteto，2026-11-19（456 回复 / 693 转帖 / 6,211 点赞 / 11,361 收藏 / 约 73.9 万浏览）。作者为 SpaceX Super Intelligence、Grok Bot 团队成员，React Compiler 核心团队，曾在 Cursor、Meta、Netflix 工作。本页为结构化中文转述，保留目标与流程的定义、starter 目标清单、复述确认法、隐性判断清单、自我改进与 routines 触发方式及 Dr Eggbot 入口，不做全文翻译，观点归原作者。",
    "related": [
+    "manus",
     "grokstart",
-    "cg",
-    "chromium"
+    "cg"
    ],
-   "relatedNote": "Grok Bot 三篇互推：小莫那篇讲从 0 到 1 的开通、模板与记忆清理全流程，铁柱 AGI 那篇讲把微信记录送进 Grok Bot 的工具（Grok Bot Anywhere），本篇讲用 Grok Bot 做自动化的通用方法论。",
+   "relatedNote": "互推：Manus 张涛那篇讲通用 Agent 如何做产品，与本篇同属 Agent 方法论；Grok Bot 三篇互推：小莫那篇讲从 0 到 1 的开通、模板与记忆清理全流程，铁柱 AGI 那篇讲把微信记录送进 Grok Bot 的工具（Grok Bot Anywhere），本篇讲用 Grok Bot 做自动化的通用方法论。",
    "rev": "2596266cefc2",
    "sections": [
     {
@@ -480,11 +2099,11 @@
    "sourceNote": "来源：X · Lemomo @lemomo_ai，2026-11-18（52 评论 / 66 转发 / 297 点赞 / 约 2.5 万浏览）。发现路径：重点监控号 @eianlu 转发，2026-11-19 每日监控扫到。本页为结构化中文转述，保留安装命令、8 种风格与样片故事、时长对照、审片台用法与许可证条款，观点归原作者。",
    "related": [
     "maubaron",
-    "fz",
-    "digitalhuman"
+    "shortpost",
+    "ec2000s"
    ],
    "relatedNote": "姊妹篇：Mau Baron 那篇讲动画账号怎么选形式、批量生产并变现，这篇讲怎么用 agent skill 把定格动画本身做出来——一篇给做法，一篇给赚法，对照着读。",
-   "rev": "f64f5545fb59",
+   "rev": "ce6c8fb928c7",
    "sections": [
     {
      "type": "paragraph",
@@ -612,7 +2231,7 @@
     },
     {
      "type": "paragraph",
-     "text": "lemo-animi 个人使用永远免费，许可证为 **CC BY-NC 4.0**：非商用免费，使用时署名「lemo-animi by Lemomo (LemoLab)」。任何商用都需要商用授权，包括用它制作商用影片（广告、接单、带变现的频道、产品等），授权联系 lemomo.studio@gmail.com。另外，旁白用的是微软 Edge 在线语音，可以替换；旁白文字会发送到微软的语音服务。"
+     "text": "lemo-animi 个人使用永远免费，许可证为 **CC BY-NC 4.0**：非商用免费，使用时署名「lemo-animi by Lemomo (LemoLab)」。任何商用都需要商用授权，包括用它制作商用影片（广告、接单、带变现的频道、产品等），授权联系 [[email protected]](/cdn-cgi/l/email-protection)。另外，旁白用的是微软 Edge 在线语音，可以替换；旁白文字会发送到微软的语音服务。"
     },
     {
      "type": "list",
@@ -657,8 +2276,8 @@
    "sourceNote": "来源：X · Mau Baron @maubaron，2026-11-18（15 评论 / 48 转发 / 322 点赞 / 约 6.9 万浏览）。发现路径：重点监控号 @eianlu 转发，2026-11-19 每日监控扫到。文末推广 Postiz（注明由 Postiz 赞助），作者另有工具 ViewTrack。本页为结构化中文转述，保留十步流程、五要素拆解、两处提示词大意、关键账号数据与五种变现方式，不做全文翻译，观点归原作者。",
    "related": [
     "lemomo",
-    "fz",
-    "digitalhuman"
+    "shortpost",
+    "ec2000s"
    ],
    "relatedNote": null,
    "rev": "dd588d02e624",
@@ -1044,9 +2663,9 @@
    "stats": "44 回复 / 40 转帖 / 206 点赞 / 318 书签 / 约 2.4 万观看",
    "sourceNote": "来源：X · 阿哲Phil @Formulasearch（AI Builder & Visual Designer），2026-11-18（44 回复 / 40 转帖 / 206 点赞 / 318 书签 / 约 2.4 万观看），经 @eianlu 转发发现。本页按原文六步完整整理，保留 Knockin' 贯穿案例、四种开头方式与代码动画的全部要点，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "digitalhuman"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "0afbac6a5613",
@@ -1749,9 +3368,9 @@
    "stats": "原文对象创建于 2026-11-07；1 回复 / 1 转帖 / 3 点赞 / 2 书签 / 223 次观看",
    "sourceNote": "来源：X · Morry.AI @Morry4AI，2026-11-18 重新发布（原文对象创建于 2026-11-07；1 回复 / 1 转帖 / 3 点赞 / 2 书签 / 223 次观看）。本页按原文四节完整整理，保留两条英文指令原文、安装指令要点与四步流程，观点归原作者。",
    "related": [
-    "chromium",
-    "grokbot",
-    "addy"
+    "shaoreview",
+    "shaobitter",
+    "wlzh"
    ],
    "relatedNote": null,
    "rev": "95d645df00d2",
@@ -1900,9 +3519,9 @@
    "stats": "27 回复 / 17 转帖 / 72 点赞 / 75 书签 / 9,356 次观看",
    "sourceNote": "来源：X · Lonely @Lonely__MH，2026-11-18（27 回复 / 17 转帖 / 72 点赞 / 75 书签 / 9,356 次观看），经 @xueyu1125 转发发现，作者为 Lonely。本页按原文结构化整理，保留常规五步、手机五步、技能推荐与四条技巧，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "c65511eb62c7",
@@ -2039,9 +3658,9 @@
    "stats": "21 评论 / 52 转发 / 322 点赞 / 约 4.8 万浏览",
    "sourceNote": "来源：X · govin.eth | G哥 @goan999999，2026-11-17（21 评论 / 52 转发 / 322 点赞 / 约 4.8 万浏览）。发现路径：每日监控轮换扫到 @goan999999，2026-11-19 收录。作者为韩国硕士、AI 产品经理。本页为结构化中文转述，保留分镜与定妆的提示词要点、三段导演提示词的逐秒安排、自查四步与排错方法，不照搬原文完整提示词，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "2da87d95ff7e",
@@ -2262,7 +3881,7 @@
    ],
    "url": "https://x.com/yaohongan2025/article/2122455841290817783",
    "stats": "约 4,047 浏览",
-   "sourceNote": "来源：X · 虹安 @yaohongan2025，2026-11-17（约 4,047 浏览）。发现路径：每日监控轮换扫到 @yaohongan2025，2026-11-19 收录。网站：whyitearns.com ↗；作者邮箱 yaohongan20@qq.com。本页为结构化中文转述，保留六条收获的产品与数字、收据结构、两份深拆样本、机会池与月报关键数据及收费档位，观点归原作者。",
+   "sourceNote": "来源：X · 虹安 @yaohongan2025，2026-11-17（约 4,047 浏览）。发现路径：每日监控轮换扫到 @yaohongan2025，2026-11-19 收录。网站：whyitearns.com ↗；作者邮箱 [email protected]。本页为结构化中文转述，保留六条收获的产品与数字、收据结构、两份深拆样本、机会池与月报关键数据及收费档位，观点归原作者。",
    "related": [
     "sites10",
     "posthogui",
@@ -2457,9 +4076,9 @@
    "stats": "9 回复 / 32 转帖 / 95 点赞 / 约 12 万观看",
    "sourceNote": "来源：X · ElevenCreative @ElevenCreative（ElevenLabs 关联账号），2026-11-17（9 回复 / 32 转帖 / 95 点赞 / 约 12 万观看），英文原文。本页按原文三种风格完整整理，保留全部流程步骤、提示词模板要点与参数，入口 Flows：elevenlabs.io/flows，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "d6fe287d6eb9",
@@ -2612,9 +4231,9 @@
    "stats": "34 回复 / 66 转帖 / 360 赞 / 602 书签 / 约 6.9 万观看",
    "sourceNote": "来源：X · WquGuru @wquguru，2026-11-17（34 回复 / 66 转帖 / 360 赞 / 602 书签 / 约 6.9 万观看）。本页按原文四步完整整理，保留资产库清单、定景定妆方法论、批量复制与舞剑视频的全部难点解法，提示词以要点形式呈现，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "f4f103861726",
@@ -2791,9 +4410,9 @@
    "stats": "66 回复 / 159 转帖 / 878 点赞 / 1,831 书签 / 约 14.7 万观看",
    "sourceNote": "来源：X · Leaf Yeah! @leaf_sanren，2026-11-17（66 回复 / 159 转帖 / 878 点赞 / 1,831 书签 / 约 14.7 万观看），经 @eianlu 转发发现。作者背景：哲学 - 数据分析 - 独立开发，SeeCut（数字人 + AI 网感剪辑）、talk-to-fengge（demo 在抖音百万播放）。本页按原文六节完整整理，保留三条出片路线的全部步骤、边界、账单与三段指令要点，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "8f2bd0ff0b84",
@@ -3112,9 +4731,9 @@
    "stats": "154 回复 / 433 转帖 / 3,455 赞 / 6,388 书签 / 约 37.4 万观看",
    "sourceNote": "来源：X · Addy Osmani @addyosmani（Claude Code @anthropicai），2026-11-17（154 回复 / 433 转帖 / 3,455 赞 / 6,388 书签 / 约 37.4 万观看），英文原文，经 @vikingmute 转发发现。本页按原文脉络完整整理，保留三种测试的全部要点与团队 review 纪律，观点归原作者。",
    "related": [
-    "chromium",
-    "grokbot",
-    "morry"
+    "shaoreview",
+    "shaobitter",
+    "wlzh"
    ],
    "relatedNote": null,
    "rev": "e84215e83440",
@@ -3494,9 +5113,9 @@
    "stats": "74 回复 / 107 转帖 / 588 点赞 / 1,124 书签 / 约 22.9 万观看",
    "sourceNote": "来源：X · 雪瑜 @xueyu1125，2026-11-16（74 回复 / 107 转帖 / 588 点赞 / 1,124 书签 / 约 22.9 万观看）。本页按原文九节完整整理，保留四档价格、七点回报、三道门槛、模型分工表、Magpie 三方案与三个报错解法的全部要点，观点与风险提示归原作者。",
    "related": [
-    "chromium",
-    "grokbot",
-    "morry"
+    "shaoreview",
+    "shaobitter",
+    "wlzh"
    ],
    "relatedNote": null,
    "rev": "6236e9066a4e",
@@ -3745,9 +5364,9 @@
    "stats": "0 回复 / 2 转帖 / 3 点赞 / 8 收藏 / 约 1.1 万浏览",
    "sourceNote": "来源：X · テツメモ｜AI図解×検証｜Newsletter @tetumemo，2026-11-14（0 回复 / 2 转帖 / 3 点赞 / 8 收藏 / 约 1.1 万浏览），日文原文。本页用中文按原文脉络结构化整理，保留事故链、八条对策与机制化防范的全部要点，观点归原作者。",
    "related": [
-    "chromium",
-    "grokbot",
-    "morry"
+    "shaoreview",
+    "shaobitter",
+    "wlzh"
    ],
    "relatedNote": null,
    "rev": "3b85edafb86f",
@@ -3892,11 +5511,11 @@
    "stats": "15 回复 / 27 转帖 / 219 点赞 / 318 书签 / 约 17.6 万观看",
    "sourceNote": "来源：X · HyperFrames @HyperFrames_（关联 HeyGen），2026-11-13（15 回复 / 27 转帖 / 219 点赞 / 318 书签 / 约 17.6 万观看），英文原文。HyperFrames 免费开源，Studio 应用可在 Mac、Windows 与 Linux 上让智能体在预览旁运行（hyperframes.studio）；原文最初发表于 HyperFrames 博客。本页按原文脉络结构化整理，数据与结论归原作者。",
    "related": [
-    "dshcreator",
-    "dsh",
-    "chromium"
+    "manus",
+    "chromium",
+    "grokbot"
    ],
-   "relatedNote": null,
+   "relatedNote": "互推：Manus 张涛那篇同样主张「Less structure, more intelligence」，与本篇的 harness 观正面对照；Kyle Jeong 那篇讲 agent 在 Chromium 流水线里的实战，lauren 那篇讲 Grok Bot 自动化方法论。",
    "rev": "5d39fcb9f0e9",
    "sections": [
     {
@@ -4056,9 +5675,9 @@
    "stats": "64 回复 / 351 转帖 / 2,951 点赞 / 3,631 书签 / 约 23.6 万观看",
    "sourceNote": "来源：X · Chrome for Developers @ChromiumDev（Google for Developers），2026-11-13（64 回复 / 351 转帖 / 2,951 点赞 / 3,631 书签 / 约 23.6 万观看），英文原文。本页按原文四节结构完整整理，保留全部案例数据与安装命令，观点归原作者。",
    "related": [
-    "chromium",
-    "grokbot",
-    "morry"
+    "shaoreview",
+    "shaobitter",
+    "wlzh"
    ],
    "relatedNote": null,
    "rev": "a1f9088f3bd4",
@@ -4536,7 +6155,7 @@
    "related": [
     "grokstart",
     "grokbot",
-    "chromium"
+    "shaoreview"
    ],
    "relatedNote": "Grok Bot 三篇互推：小莫那篇讲从 0 到 1 的开通、模板与记忆清理全流程，lauren @poteto 那篇讲自动化方法论，本篇讲把微信记录送进 Grok Bot 的工具。",
    "rev": "758746f74e74",
@@ -4705,9 +6324,9 @@
    "stats": "35 回复 / 2 转帖 / 70 点赞 / 11 书签 / 7,603 次观看",
    "sourceNote": "来源：X · 诺诺 @shenghouxuyao，2026-11-06（35 回复 / 2 转帖 / 70 点赞 / 11 书签 / 7,603 次观看）。本页按原文七节结构化整理，保留全部后台数据口径、分工与三个提醒，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "1c5a37fb12d8",
@@ -4850,9 +6469,9 @@
    "stats": "854 回复 / 6,475 转帖 / 36,915 点赞 / 75,762 书签 / 约 564 万观看",
    "sourceNote": "来源：X · Eian @EianLu，2026-11-05（854 回复 / 6,475 转帖 / 36,915 点赞 / 75,762 书签 / 约 564 万观看）。本页按原文两大部分完整整理，保留工具分工、五点故事标准、分镜六要点、首尾帧绘制顺序、错误对照表要点与四线程模式，提示词以要点形式呈现，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "9afc5fa32a0a",
@@ -5700,9 +7319,9 @@
    "stats": null,
    "sourceNote": "来源：简盒 JianHeBox（页面未署个人作者名，仅标注作者团队），2026-11-02，页面标注约 12 分钟读完，数据核验时间为 2026 年 11 月 2 日，价格与额度以各平台官网公示为准。本页按原文结构化整理，保留速查表、成本公式与 FAQ，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "3cd0e9fc733d",
@@ -5881,7 +7500,7 @@
    "related": [
     "xianyu",
     "seedance",
-    "chromium"
+    "shaoreview"
    ],
    "relatedNote": "互推：闲鱼黑话篇把 Claude 账号在闲鱼上的暗语（A社、克劳德、kyc/3HK 纯净防封账号）列进了速查表，本篇讲这些账号背后的封号风控与斩杀线；另附 G哥的 Seedance 教程，同属 Claude / Codex 实操。",
    "rev": "f0623b51ada0",
@@ -6039,7 +7658,7 @@
    "related": [
     "cg",
     "grokbot",
-    "chromium"
+    "shaoreview"
    ],
    "relatedNote": "Grok Bot 三篇互推：铁柱 AGI 那篇讲把微信记录送进 Grok Bot 的工具（Grok Bot Anywhere），lauren @poteto 那篇讲用 Grok Bot 做自动化的通用方法论，本篇讲从 0 到 1 的开通、接 X、模板与记忆清理全流程。",
    "rev": "aeb2897439d0",
@@ -6254,10 +7873,10 @@
    "related": [
     "hf",
     "dshcreator",
-    "chromium"
+    "shaoreview"
    ],
    "relatedNote": null,
-   "rev": "212327c54e01",
+   "rev": "8607227bae99",
    "sections": [
     {
      "type": "paragraph",
@@ -6311,7 +7930,7 @@
     },
     {
      "type": "paragraph",
-     "text": "在官方 DeepSeek API 的用户中，Harness 已是使用最广泛的编码智能体。未来将继续改进从入门到日常使用的各环节体验，并随 DeepSeek 模型演进持续优化适配。第三方插件被视为 Harness 体验中独特且关键的部分，计划让插件更易发现、安装与管理，并欢迎更多插件开发者加入，目标是把 AI 带入更多人的日常工作与生活。开始使用：访问 deepseek.com/harness 试用；遇到问题或有反馈可发邮件至 harness@deepseek.com。作者感谢社区用户的耐心与信任，并欢迎反馈。"
+     "text": "在官方 DeepSeek API 的用户中，Harness 已是使用最广泛的编码智能体。未来将继续改进从入门到日常使用的各环节体验，并随 DeepSeek 模型演进持续优化适配。第三方插件被视为 Harness 体验中独特且关键的部分，计划让插件更易发现、安装与管理，并欢迎更多插件开发者加入，目标是把 AI 带入更多人的日常工作与生活。开始使用：访问 deepseek.com/harness 试用；遇到问题或有反馈可发邮件至 [[email protected]](/cdn-cgi/l/email-protection)。作者感谢社区用户的耐心与信任，并欢迎反馈。"
     }
    ]
   },
@@ -6663,7 +8282,7 @@
    "related": [
     "codex101",
     "lemomo",
-    "chromium"
+    "shaoreview"
    ],
    "relatedNote": "互推：Codex 新手向与本篇同为 Sukiea1008 的 AI 效率方法论；Lemomo 的 lemo-animi 同属 Skill / Agent 工作流主题。",
    "rev": "5502b57f49cf",
@@ -6831,7 +8450,7 @@
    "related": [
     "lemomo",
     "naval",
-    "chromium"
+    "shaoreview"
    ],
    "relatedNote": "互推：Lemomo 的 lemo-animi 是 Codex / Claude Code 里 Skill 的实战案例；《纳瓦尔宝典》学习系统与本篇同为 Sukiea1008 的 AI 效率方法论。",
    "rev": "483a78a6455c",
@@ -6968,9 +8587,9 @@
    "stats": "164 点赞 / 26 转帖 / 约 6.1 万浏览",
    "sourceNote": "来源：X · Sukiea1008 @Sukiea1008，2026-07-31（164 点赞 / 26 转帖 / 约 6.1 万浏览）。发现路径：每日监控轮换扫到 @Sukiea1008，2026-11-19 收录。本页为结构化中文转述，保留双向链接机制、一级目录与 Index/Rules 入口、Properties 字段取舍、旧笔记整理法与同步备份之分，观点归原作者。",
    "related": [
-    "chromium",
-    "grokbot",
-    "morry"
+    "shaoreview",
+    "shaobitter",
+    "wlzh"
    ],
    "relatedNote": null,
    "rev": "3583c00b3f77",
@@ -7103,9 +8722,9 @@
    "stats": "81 点赞 / 13 转帖 / 约 3.5 万浏览",
    "sourceNote": "来源：X · Sukiea1008 @Sukiea1008，2026-07-18（81 点赞 / 13 转帖 / 约 3.5 万浏览）。发现路径：每日监控轮换扫到 @Sukiea1008，2026-11-19 收录。本页为结构化中文转述，保留最小闭环路径、公开仓库的注意事项、域名与备案的判断标准及 Cloudflare 的定位，观点归原作者。",
    "related": [
-    "chromium",
-    "grokbot",
-    "morry"
+    "shaoreview",
+    "shaobitter",
+    "wlzh"
    ],
    "relatedNote": null,
    "rev": "747eae5a9a3f",
@@ -7229,9 +8848,9 @@
    "stats": null,
    "sourceNote": "来源：36氪 · 36氪AI测评，2026-07-08 11:03。本页按原文结构化整理，保留六款工具的全部优劣判断与适配场景，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "74912206e173",

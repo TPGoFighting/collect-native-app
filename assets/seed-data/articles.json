@@ -1,8 +1,426 @@
 {
  "schema_version": 1,
- "updated_at": "2026-11-19T05:42:02.085Z",
- "count": 42,
+ "updated_at": "2026-11-20T05:19:05.987Z",
+ "count": 53,
  "articles": [
+  {
+   "id": "shaoreview",
+   "title": "Claude Code 团队是怎么做 code review 的？——分层检查后，合并 PR 翻倍、回滚降超 40%",
+   "author": "meng shao @shao__meng",
+   "handle": "shao__meng",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-20",
+   "mins": 11,
+   "cover": "https://collect.tpgofighting.top/assets/covers/shaoreview.webp",
+   "coverAlt": "Claude Code 团队 code review 分层检查收录封面",
+   "summary": "完整长文版：转述 Claude Dev 内部实践——约 90% 代码由 Claude 写，七层挡板（提交前验证、CI、AI 审查、安全审查、按风险批准、合并队列与功能开关、快速回滚）如何让合入 PR 翻倍、回滚降超 40%，附 CLAUDE.md / REVIEW.md 分工、AI 审查 16%→54% 与收敛改动数据（平均轮次 2.08→1.32）。与 Addy Osmani 的验证方法论篇同源对照。",
+   "keywords": [
+    "claude",
+    "code",
+    "code",
+    "review",
+    "pr",
+    "回滚",
+    "ai",
+    "审查",
+    "claude.md",
+    "review.md",
+    "addy",
+    "osmani",
+    "shao",
+    "meng",
+    "分层检查"
+   ],
+   "url": "https://x.com/shao__meng/article/2123576742464073745",
+   "stats": null,
+   "sourceNote": "来源：X · meng shao @shao__meng，2026-11-20，转述 Claude Dev 10 月发布的内部实践分享（原作者 Addy Osmani、Morgan Westlee Lunt、Qing Wang）。发现路径：每日监控轮换扫到 @shao__meng，2026-11-20 收录。本页为结构化中文转述，保留七层检查、AI 审查数据与收敛改动前后对照，观点归原作者。",
+   "related": [
+    "addy",
+    "wqulint",
+    "hf"
+   ],
+   "relatedNote": "互推：Addy Osmani 那篇讲 Claude Code 团队如何思考验证，与本篇同源（本篇转述的原作者之一正是 Addy Osmani）；WquGuru 拆解 @poteto 的 Lint 工程哲学与本篇同属「怎么管住 Agent 写的代码」；HyperFrames 的 harness 篇讲脚手架如何胜过 Claude Code。",
+   "rev": "94fdc4af34ae"
+  },
+  {
+   "id": "shaobitter",
+   "title": "Thariq Shihipar：Bitter Lesson 的甜蜜一面 —— 用可读规格和自制脚本语言，把创作控制权留在开发者手里",
+   "author": "meng shao @shao__meng",
+   "handle": "shao__meng",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-20",
+   "mins": 10,
+   "cover": "https://collect.tpgofighting.top/assets/covers/shaobitter.webp",
+   "coverAlt": "Bitter Lesson 的甜蜜一面演讲收录封面",
+   "summary": "完整长文版：转述 Thariq Shihipar 在 AI Engineer Code Summit 2026 的演讲——猜错的三件事（Bash、React、扩散模型）、工业革命与文艺复兴同时发生、锯齿前沿之内的平滑内部、12 个盲测 Claude 的世界地图实验（Opus 5.5 达 99.0%），以及把游戏代码库拆成引擎与可读规格、用 defineMove 与 seconds(0.6) 自制脚本语言拿回创作控制权。",
+   "keywords": [
+    "thariq",
+    "shihipar",
+    "bitter",
+    "lesson",
+    "甜蜜一面",
+    "可读规格",
+    "脚本语言",
+    "vibe",
+    "coding",
+    "平滑内部",
+    "锯齿前沿",
+    "shao",
+    "meng"
+   ],
+   "url": "https://x.com/shao__meng/article/2123595391077875984",
+   "stats": null,
+   "sourceNote": "来源：X · meng shao @shao__meng，2026-11-20，转述 Thariq Shihipar（前 Claude Code 核心开发者，现独立开发者）在 AI Engineer Code Summit 2026 的主题演讲「The Sweet Side of the Bitter Lesson」。发现路径：每日监控轮换扫到 @shao__meng，2026-11-20 收录。本页为结构化中文转述，保留三件猜错的事、平滑内部判断、世界地图实验数据与可读规格的修法，观点归原作者。",
+   "related": [
+    "shaoreview",
+    "wqulint",
+    "manus"
+   ],
+   "relatedNote": "互推：同为 meng shao 11 月 20 日的转述，code review 篇讲 Anthropic 内部如何审查 Agent 写的代码，本篇讲前 Claude Code 核心开发者如何用可读规格拿回创作控制权；WquGuru 的 Lint 工程哲学篇与 Manus 的产品方法论篇同属 Agent 工程一组。",
+   "rev": "b514292e9d43"
+  },
+  {
+   "id": "wlzh",
+   "title": "Telegram 的 AI 自动化生态，小白从零看懂机器人、MCP、Skills 到底怎么接",
+   "author": "M. @wlzh",
+   "handle": "wlzh",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 14,
+   "cover": "https://collect.tpgofighting.top/assets/covers/wlzh.webp",
+   "coverAlt": "Telegram 的 AI 自动化生态新手指南收录封面",
+   "summary": "完整长文版：Telegram AI 自动化新手全指南——机器人与用户号两条路线、生态四层、BotFather 建机器人、四个 Agent 接入方案（Claude Code 官方插件、OpenClaw、Hermes、cc-connect）、MCP 三选与 PyPI 装错包大坑、Skills 与 MCP 的分工、n8n 方案、八类坑与权限从小往大放的推荐顺序。",
+   "keywords": [
+    "telegram",
+    "机器人",
+    "mcp",
+    "skills",
+    "botfather",
+    "用户号",
+    "mtproto",
+    "openclaw",
+    "hermes",
+    "cc-connect",
+    "wlzh",
+    "自动化"
+   ],
+   "url": "https://x.com/wlzh/article/2123326980070486525",
+   "stats": null,
+   "sourceNote": "来源：X · M. @wlzh，2026-11-19。发现路径：重点监控号 @wlzh，2026-11-20 收录（原文发布于 11 月 19 日）。本页为结构化中文转述，保留两条路线、四个接入方案、MCP 三选与装错包大坑、八类坑位和推荐顺序，观点归原作者。",
+   "related": [
+    "grokbot",
+    "antigravity",
+    "wqulint"
+   ],
+   "relatedNote": "互推：lauren @poteto 的 Grok Bot 自动化篇讲 Bot 团队与 routines，本篇讲把 Agent 接进 Telegram 的通道与权限；雪瑜的 Antigravity 攻略同属工具接入实操；WquGuru 的 Lint 篇同属 Agent 工程纪律。",
+   "rev": "d4a28ee0a3b7"
+  },
+  {
+   "id": "wqulint",
+   "title": "监督一个比你聪明的人：拆解土豆姐的 Agent 与 Lint 工程哲学（长文慎点）",
+   "author": "WquGuru @wquguru",
+   "handle": "wquguru",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 16,
+   "cover": "https://collect.tpgofighting.top/assets/covers/wqulint.webp",
+   "coverAlt": "监督一个比你聪明的人 Agent 与 Lint 工程哲学收录封面",
+   "summary": "完整长文版：拆解 Lauren Tan @poteto 的工程哲学六节——间接提示词先让 Agent 复述、/teach /how /why /recall 与记忆分层、README 与代码原型做规划、/architect 多模型竞技场五步闭环、Lint 铁律与倒金字塔防线（/no-comments、/correct）、验证底座（专用 CLI 六条标准 + Feature Map）。她每月高置信度合并 2,000 个 PR。与 lauren 本人的 Grok Bot 自动化篇对照读。",
+   "keywords": [
+    "poteto",
+    "lauren",
+    "tan",
+    "lint",
+    "agent",
+    "工程哲学",
+    "pstack",
+    "architect",
+    "teach",
+    "how",
+    "why",
+    "correct",
+    "wquguru",
+    "土豆姐"
+   ],
+   "url": "https://x.com/wquguru/article/2123269893588152709",
+   "stats": null,
+   "sourceNote": "来源：X · WquGuru @wquguru，2026-11-19，拆解对象为 Lauren Tan @poteto。发现路径：重点监控号 @wquguru，2026-11-20 收录。参考：pstack 源码 github.com/cursor/plugins/tree/main/pstack、/how（github.com/poteto/how）、验证技能示例（github.com/poteto/verification-skill-example）。本页为结构化中文转述，保留六节方法论、倒金字塔排序与关键数据，观点归原作者。",
+   "related": [
+    "grokbot",
+    "handoff",
+    "addy"
+   ],
+   "relatedNote": "互推：拆解对象 lauren @poteto 本人的《Automate Anything with Grok Bot》讲普通人怎么交接工作，本篇拆她的工程纪律；Hardy Chen 的《怎样把一项工作真正交给AI》是读那篇方法论后的落地展开；Addy Osmani 的验证方法论篇与本篇的验证底座一节正面对照。",
+   "rev": "d39988e96e85"
+  },
+  {
+   "id": "handoff",
+   "title": "怎样把一项工作真正交给AI",
+   "author": "Hardy Chen @Chchenhao0129",
+   "handle": "Chchenhao0129",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 13,
+   "cover": "https://collect.tpgofighting.top/assets/covers/handoff.webp",
+   "coverAlt": "怎样把一项工作真正交给 AI 收录封面",
+   "summary": "完整长文版：读 lauren《Automate Anything》后的落地展开——以小店改期邮件为例：先讲清目标的两个条件、让 AI 复述并用旧邮件试它、多讲一次为什么没照旧办、功能地图与编号串记录、掉线后的验收记录、反馈改流程与批准分开、自动触发放最后、先算值不值得交，附两张测试表与三组变体演练。与 Grok Bot 自动化篇互为源头与展开。",
+   "keywords": [
+    "交接",
+    "ai",
+    "工作流",
+    "自动化",
+    "改期",
+    "预约",
+    "功能地图",
+    "benny",
+    "hardy",
+    "chen",
+    "lauren",
+    "poteto",
+    "验收"
+   ],
+   "url": "https://x.com/Chchenhao0129/article/2123217337285505216",
+   "stats": null,
+   "sourceNote": "来源：X · Hardy Chen @Chchenhao0129，2026-11-19（经 @eianlu 转发进入监控名单视野）。发现路径：每日监控经 @eianlu 转发扫到，2026-11-20 收录。作者自述：Hardy，热爱 vibe coding，平时写怎么用 AI 做工作流、搭网站和做产品。本页为结构化中文转述，保留小店改期主线、Benny 案例与实操演练，观点归原作者。",
+   "related": [
+    "grokbot",
+    "wqulint",
+    "cg"
+   ],
+   "relatedNote": "互推：源头是 lauren @poteto 的《Automate Anything with Grok Bot》，本篇用小店改期把它落成可演练的操作；WquGuru 拆解 @poteto 的 Lint 工程哲学是同一方法论的工程面；铁柱 AGI 的 Grok Bot Anywhere 是通道工具篇。",
+   "rev": "99bf8c1254e7"
+  },
+  {
+   "id": "shortpost",
+   "title": "如何给 AI 短剧做后期：9 段素材剪成 4 分钟成片，声音、调色、字幕参数全公开（附剪辑技能包）",
+   "author": "Miller @TuyetloanP81840",
+   "handle": "TuyetloanP81840",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 18,
+   "cover": "https://collect.tpgofighting.top/assets/covers/shortpost.webp",
+   "coverAlt": "如何给 AI 短剧做后期参数全公开收录封面",
+   "summary": "完整长文版：「一个人拍 AI 短剧」系列第 5 篇——第 4 集 9 段素材 46 个镜头剪成 4 分 05 秒：体检八项与剪辑清单、同期声与配音三工具（剪映朗读、IndexTTS 2.5、音谷）、声音三个数（对白 -16 LUFS、配乐三分之一、峰值 -1 dB）与混音参数、硬切与三种转场、2.4:1 裁切与同款 LUT、字幕文稿匹配与样式规格、7 个坑与 Agent 分工，附技能包「短剧剪辑师」。",
+   "keywords": [
+    "ai",
+    "短剧",
+    "后期",
+    "剪辑",
+    "剪映",
+    "混音",
+    "lufs",
+    "调色",
+    "字幕",
+    "indextts",
+    "音谷",
+    "sonicvale",
+    "miller",
+    "技能包"
+   ],
+   "url": "https://x.com/TuyetloanP81840/article/2123328212700893554",
+   "stats": null,
+   "sourceNote": "来源：X · Miller @TuyetloanP81840，2026-11-19（经 @eianlu 转发进入监控名单视野），「一个人拍 AI 短剧」系列第 5 篇。发现路径：每日监控经 @eianlu 转发扫到，2026-11-20 收录。本页为结构化中文转述，保留全部关键参数（响度、混音、转场、画幅、字幕规格）与工具授权说明，观点归原作者。",
+   "related": [
+    "seedance",
+    "eian",
+    "ec2000s"
+   ],
+   "relatedNote": "互推：G哥的 Seedance 教程讲从分镜到成片的生成端，本篇讲生成之后的后期端；Eian 的全流程篇同属 AI 视频实操；ElevenCreative 的 2000s 游戏预告篇是同批收录的 Flows 玩法。",
+   "rev": "e17c3d85f223"
+  },
+  {
+   "id": "ec2000s",
+   "title": "Make a 2000s video game trailer with AI (full guide)",
+   "author": "ElevenCreative @ElevenCreative",
+   "handle": "ElevenCreative",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 5,
+   "cover": "https://collect.tpgofighting.top/assets/covers/ec2000s.webp",
+   "coverAlt": "2000 年代风游戏预告片 AI 制作指南收录封面",
+   "summary": "完整长文版（英文原文）：在 ElevenCreative Flows 里做 2000 年代风游戏预告片的五步工作流——组建角色队伍、为故事发生地做关键帧、把角色放进场景摆好动作、连到视频生成节点（Seedance 2.5）让它动起来、加音乐并用合成节点合片。与同作者《3 AI videos》同属 Flows 玩法系列。",
+   "keywords": [
+    "elevenlabs",
+    "flows",
+    "2000s",
+    "game",
+    "trailer",
+    "seedance",
+    "游戏预告",
+    "低多边形",
+    "elevencreative"
+   ],
+   "url": "https://x.com/ElevenCreative/article/2123447365638197580",
+   "stats": null,
+   "sourceNote": "来源：X · ElevenCreative @ElevenCreative，2026-11-19。发现路径：重点监控号 @ElevenCreative，2026-11-20 收录。入口：elevenlabs.io/flows。本页为结构化中文转述（原文为英文），保留五步工作流与 Seedance 2.5 模型选择，观点归原作者。",
+   "related": [
+    "ec",
+    "seedance",
+    "shortpost"
+   ],
+   "relatedNote": "互推：同作者 ElevenCreative 的《3 AI videos》讲三种跳出俗套的风格 Flows，本篇讲 2000 年代游戏风预告的五步工作流；G哥的 Seedance 教程与 Miller 的短剧后期篇同属 AI 视频实操。",
+   "rev": "96a42eb7d727"
+  },
+  {
+   "id": "heygen6",
+   "title": "HeyGen Avatar 6: Gestures on Cue",
+   "author": "HeyGen MCP @HeyGenMCP",
+   "handle": "HeyGenMCP",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 12,
+   "cover": "https://collect.tpgofighting.top/assets/covers/heygen6.webp",
+   "coverAlt": "HeyGen Avatar 6 手势踩点指南收录封面",
+   "summary": "完整长文版（英文原文）：HeyGen Avatar 6 全指南——先自然生成再只补两三个手势提示、三大输入分工（形象定常量、动作提示管身体、声音驱动表情）、手势提示词写法（一提示一手势、照抄脚本原词、描述手而非感觉）、情绪标签与幅度调节、手势不生效排查清单、HeyGen MCP 在 Claude / ChatGPT 里的接法与双人对话。与 HyperFrames（HeyGen）篇同属 HeyGen 生态。",
+   "keywords": [
+    "heygen",
+    "avatar",
+    "6",
+    "gestures",
+    "数字人",
+    "手势提示",
+    "mcp",
+    "heygenmcp",
+    "双人对话",
+    "motion",
+    "prompt"
+   ],
+   "url": "https://x.com/HeyGenMCP/article/2123555808122388594",
+   "stats": null,
+   "sourceNote": "来源：X · HeyGen MCP @HeyGenMCP，2026-11-19（经 @HeyGen 官方账号转发进入监控名单视野）。发现路径：每日监控经 @HeyGen 转发扫到，2026-11-20 收录。本页为结构化中文转述（原文为英文），保留三大输入分工、手势提示写法、排查清单与 MCP 接法，观点归原作者。",
+   "related": [
+    "hf",
+    "digitalhuman",
+    "ec"
+   ],
+   "relatedNote": "互推：HyperFrames 是 HeyGen 开源的视频工具，与本篇同属 HeyGen 生态；Lonely 的数字人 IP 篇讲不出镜做号，与 Avatar 6 的数字人玩法对照；ElevenCreative 的 Flows 系列同属 AI 视频工具。",
+   "rev": "3e4add1b3b46"
+  },
+  {
+   "id": "sites100",
+   "title": "超全 100 种建站方式，从零代码、笔记建站到 Rust，总有一种适合你",
+   "author": "想风 @xaiwind",
+   "handle": "xaiwind",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 15,
+   "cover": "https://collect.tpgofighting.top/assets/covers/sites100.webp",
+   "coverAlt": "超全 100 种建站方式收录封面",
+   "summary": "完整长文版：100 种建站方式九类全名单——零代码平台、AI 建站、笔记建站、开源 CMS、静态站点生成器（按语言分）、前端框架、后端语言、电商单页链接页、极客玩法，附上线方式（GitHub Pages / Cloudflare Pages / Vercel）与六个常见坑。判断标准只有三个：会不会写代码、想花多少钱、内容放在哪写。与 Sukiea1008《网页上线》互为全景与最小闭环。",
+   "keywords": [
+    "建站",
+    "100",
+    "种",
+    "零代码",
+    "wordpress",
+    "hugo",
+    "astro",
+    "next.js",
+    "notion",
+    "quartz",
+    "rust",
+    "xaiwind",
+    "想风",
+    "上线"
+   ],
+   "url": "https://x.com/xaiwind/article/2123394871222485023",
+   "stats": null,
+   "sourceNote": "来源：X · 想风 @xaiwind，2026-11-19（经 @leaf_sanren 转发进入监控名单视野）。发现路径：每日监控经 @leaf_sanren 转发扫到，2026-11-20 收录。作者自述：想风，一个关注出海与 AI、AIGC 的创作者；本文基于 AI 辅助与个人实践融合创作，持续维护。本页为结构化中文转述，保留 100 种方式的完整名单与六个坑，观点归原作者。",
+   "related": [
+    "weblaunch",
+    "obsi",
+    "aicash"
+   ],
+   "relatedNote": "互推：Sukiea1008 的《网页上线：最快路径》是最小闭环版（GitHub Pages 三步），本篇是 100 种方式的全景地图；同作者群的 Obsidian 起步篇与 AI 内容创作变现篇同属新手向实操。",
+   "rev": "d2fa4088fb9b"
+  },
+  {
+   "id": "gptwrite",
+   "title": "ChatGPT 保姆级写作教程｜从源头解决人机感和 AI 味 ✏️",
+   "author": "小晚不在 @bbkirstry",
+   "handle": "bbkirstry",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 14,
+   "cover": "https://collect.tpgofighting.top/assets/covers/gptwrite.webp",
+   "coverAlt": "ChatGPT 保姆级写作教程从源头解决 AI 味收录封面",
+   "summary": "完整长文版：不用固定 Prompt、半小时写一篇文章的方法——真的聊天而不是发「帮我写篇文章」指令。AI 味有时是理解问题：先让 ChatGPT 认识你（背景四件事、两篇满意加一篇不满意的旧文、视角思路语言三层、开启 Memory），从真实感受开始聊，再分明线与暗线目的定结构，改稿三查（观点、结构、语言）与长期协作复盘。附「赛博小晚」与排版两个 Skill。",
+   "keywords": [
+    "chatgpt",
+    "写作",
+    "ai味",
+    "人机感",
+    "聊天",
+    "memory",
+    "明线",
+    "暗线",
+    "改稿",
+    "小晚",
+    "bbkirstry",
+    "赛博小晚"
+   ],
+   "url": "https://x.com/bbkirstry/article/2123419503417544831",
+   "stats": null,
+   "sourceNote": "来源：X · 小晚不在 @bbkirstry，2026-11-19（经 @0xlangeai 转发进入监控名单视野）。发现路径：每日监控经 @0xlangeai 转发扫到，2026-11-20 收录。作者 Skill：思考助手「赛博小晚」（github.com/cyberxiaowan/cyber-xiaowan）、长图文排版 Skill（github.com/cyberxiaowan/xiaowan-wechat-layout-skill）。本页为结构化中文转述，保留四步实操与改稿三查，观点归原作者。",
+   "related": [
+    "aicash",
+    "naval",
+    "grokbot"
+   ],
+   "relatedNote": "互推：Ryrenz 的 AI 内容创作变现入门讲五种形式的总览，本篇讲其中长文写作的具体方法；《纳瓦尔宝典》学习系统同属把 AI 用进学习与表达；lauren 的 Grok Bot 自动化篇同属「把方法教给 AI 执行」一组。",
+   "rev": "8db7fb223e4f"
+  },
+  {
+   "id": "manus",
+   "title": "AI 时代如何做产品｜Manus张涛北大分享逐字稿",
+   "author": "张涛（Manus 联合创始人、CPO）· Viviennn @whereisvivien",
+   "handle": "whereisvivien",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 20,
+   "cover": "https://collect.tpgofighting.top/assets/covers/manus.webp",
+   "coverAlt": "Manus 张涛北大分享 AI 时代如何做产品收录封面",
+   "summary": "完整长文版：Manus 联合创始人张涛在北大的分享——Chatbot 的天花板、停掉做了 7 个月的 AI 浏览器、从 Cursor 看到通用 Agent、面向非技术用户与透明度设计、面向六个月后的模型（Less structure, more intelligence）、用付费识别真实价值、坚持通用与邀请码背后的 800M TPM 算力账，附给年轻创业者的三条建议。与 lauren 的 Grok Bot 自动化篇、Chromium Agent 篇、HyperFrames Harness 篇互推。",
+   "keywords": [
+    "manus",
+    "张涛",
+    "北大",
+    "通用",
+    "agent",
+    "产品",
+    "harness",
+    "付费",
+    "邀请码",
+    "viviennn",
+    "cursor",
+    "浏览器",
+    "少结构多智能",
+    "mens",
+    "et",
+    "manus"
+   ],
+   "url": "https://x.com/whereisvivien/article/2123103532182282353",
+   "stats": "约 8.9 万浏览；全文约 1.5 万字逐字稿",
+   "sourceNote": "来源：X · Viviennn @whereisvivien 发布，演讲者 张涛（Manus 联合创始人、CPO），2026-11-19（约 8.9 万浏览；全文约 1.5 万字逐字稿）。本页为结构化中文转述摘要，保留 11 个小节的脉络与全部关键数字（800M TPM、200–1000 倍、4000–5000 美元、ARR 超 4000 万近 5000 万美元、12–15 美元等），不做全文转载，观点归演讲者与原作者。",
+   "related": [
+    "grokbot",
+    "chromium",
+    "hf"
+   ],
+   "relatedNote": "互推：lauren @poteto 那篇讲用 Grok Bot 做自动化的通用方法论，Kyle Jeong 那篇讲用 agent 一天升级 4,000 万行 Chromium，HyperFrames 那篇讲自研 harness 如何胜过 Claude Code——与本篇同属「Agent 怎么做成产品」一组，对照着读。",
+   "rev": "1ac93979680e"
+  },
   {
    "id": "chromium",
    "title": "How we use agents to patch, build, and deploy 40,000,000 lines of Chromium code in <1 day",
@@ -33,11 +451,11 @@
    "stats": "约 6,523 浏览",
    "sourceNote": "来源：X · Kyle Jeong @kylejeong（Browserbase），2026-11-19（约 6,523 浏览）。发现路径：重点监控号 @browserbase 转发，2026-11-19 每日监控扫到。本页为结构化中文转述，保留补丁分类与 agent 重放循环、bfcache 回归与 HTTPS-First 两个案例、缓存与链接器的关键数字及部署验证方法，不做全文翻译，观点归原作者。",
    "related": [
-    "grokbot",
-    "morry",
-    "addy"
+    "manus",
+    "hf",
+    "grokbot"
    ],
-   "relatedNote": null,
+   "relatedNote": "互推：Manus 张涛那篇讲通用 Agent 的产品方法论（少结构、多智能，与本篇的 agent 流水线互为表里），HyperFrames 那篇讲 harness 如何胜过 Claude Code，lauren 那篇讲 Grok Bot 自动化方法论。",
    "rev": "f23beb559060"
   },
   {
@@ -75,11 +493,11 @@
    "stats": "456 回复 / 693 转帖 / 6,211 点赞 / 11,361 收藏 / 约 73.9 万浏览",
    "sourceNote": "来源：X · lauren @poteto，2026-11-19（456 回复 / 693 转帖 / 6,211 点赞 / 11,361 收藏 / 约 73.9 万浏览）。作者为 SpaceX Super Intelligence、Grok Bot 团队成员，React Compiler 核心团队，曾在 Cursor、Meta、Netflix 工作。本页为结构化中文转述，保留目标与流程的定义、starter 目标清单、复述确认法、隐性判断清单、自我改进与 routines 触发方式及 Dr Eggbot 入口，不做全文翻译，观点归原作者。",
    "related": [
+    "manus",
     "grokstart",
-    "cg",
-    "chromium"
+    "cg"
    ],
-   "relatedNote": "Grok Bot 三篇互推：小莫那篇讲从 0 到 1 的开通、模板与记忆清理全流程，铁柱 AGI 那篇讲把微信记录送进 Grok Bot 的工具（Grok Bot Anywhere），本篇讲用 Grok Bot 做自动化的通用方法论。",
+   "relatedNote": "互推：Manus 张涛那篇讲通用 Agent 如何做产品，与本篇同属 Agent 方法论；Grok Bot 三篇互推：小莫那篇讲从 0 到 1 的开通、模板与记忆清理全流程，铁柱 AGI 那篇讲把微信记录送进 Grok Bot 的工具（Grok Bot Anywhere），本篇讲用 Grok Bot 做自动化的通用方法论。",
    "rev": "2596266cefc2"
   },
   {
@@ -112,11 +530,11 @@
    "sourceNote": "来源：X · Lemomo @lemomo_ai，2026-11-18（52 评论 / 66 转发 / 297 点赞 / 约 2.5 万浏览）。发现路径：重点监控号 @eianlu 转发，2026-11-19 每日监控扫到。本页为结构化中文转述，保留安装命令、8 种风格与样片故事、时长对照、审片台用法与许可证条款，观点归原作者。",
    "related": [
     "maubaron",
-    "fz",
-    "digitalhuman"
+    "shortpost",
+    "ec2000s"
    ],
    "relatedNote": "姊妹篇：Mau Baron 那篇讲动画账号怎么选形式、批量生产并变现，这篇讲怎么用 agent skill 把定格动画本身做出来——一篇给做法，一篇给赚法，对照着读。",
-   "rev": "f64f5545fb59"
+   "rev": "ce6c8fb928c7"
   },
   {
    "id": "maubaron",
@@ -150,8 +568,8 @@
    "sourceNote": "来源：X · Mau Baron @maubaron，2026-11-18（15 评论 / 48 转发 / 322 点赞 / 约 6.9 万浏览）。发现路径：重点监控号 @eianlu 转发，2026-11-19 每日监控扫到。文末推广 Postiz（注明由 Postiz 赞助），作者另有工具 ViewTrack。本页为结构化中文转述，保留十步流程、五要素拆解、两处提示词大意、关键账号数据与五种变现方式，不做全文翻译，观点归原作者。",
    "related": [
     "lemomo",
-    "fz",
-    "digitalhuman"
+    "shortpost",
+    "ec2000s"
    ],
    "relatedNote": null,
    "rev": "dd588d02e624"
@@ -219,9 +637,9 @@
    "stats": "44 回复 / 40 转帖 / 206 点赞 / 318 书签 / 约 2.4 万观看",
    "sourceNote": "来源：X · 阿哲Phil @Formulasearch（AI Builder & Visual Designer），2026-11-18（44 回复 / 40 转帖 / 206 点赞 / 318 书签 / 约 2.4 万观看），经 @eianlu 转发发现。本页按原文六步完整整理，保留 Knockin' 贯穿案例、四种开头方式与代码动画的全部要点，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "digitalhuman"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "0afbac6a5613"
@@ -320,9 +738,9 @@
    "stats": "原文对象创建于 2026-11-07；1 回复 / 1 转帖 / 3 点赞 / 2 书签 / 223 次观看",
    "sourceNote": "来源：X · Morry.AI @Morry4AI，2026-11-18 重新发布（原文对象创建于 2026-11-07；1 回复 / 1 转帖 / 3 点赞 / 2 书签 / 223 次观看）。本页按原文四节完整整理，保留两条英文指令原文、安装指令要点与四步流程，观点归原作者。",
    "related": [
-    "chromium",
-    "grokbot",
-    "addy"
+    "shaoreview",
+    "shaobitter",
+    "wlzh"
    ],
    "relatedNote": null,
    "rev": "95d645df00d2"
@@ -353,9 +771,9 @@
    "stats": "27 回复 / 17 转帖 / 72 点赞 / 75 书签 / 9,356 次观看",
    "sourceNote": "来源：X · Lonely @Lonely__MH，2026-11-18（27 回复 / 17 转帖 / 72 点赞 / 75 书签 / 9,356 次观看），经 @xueyu1125 转发发现，作者为 Lonely。本页按原文结构化整理，保留常规五步、手机五步、技能推荐与四条技巧，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "c65511eb62c7"
@@ -390,9 +808,9 @@
    "stats": "21 评论 / 52 转发 / 322 点赞 / 约 4.8 万浏览",
    "sourceNote": "来源：X · govin.eth | G哥 @goan999999，2026-11-17（21 评论 / 52 转发 / 322 点赞 / 约 4.8 万浏览）。发现路径：每日监控轮换扫到 @goan999999，2026-11-19 收录。作者为韩国硕士、AI 产品经理。本页为结构化中文转述，保留分镜与定妆的提示词要点、三段导演提示词的逐秒安排、自查四步与排错方法，不照搬原文完整提示词，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "2da87d95ff7e"
@@ -425,7 +843,7 @@
    ],
    "url": "https://x.com/yaohongan2025/article/2122455841290817783",
    "stats": "约 4,047 浏览",
-   "sourceNote": "来源：X · 虹安 @yaohongan2025，2026-11-17（约 4,047 浏览）。发现路径：每日监控轮换扫到 @yaohongan2025，2026-11-19 收录。网站：whyitearns.com ↗；作者邮箱 yaohongan20@qq.com。本页为结构化中文转述，保留六条收获的产品与数字、收据结构、两份深拆样本、机会池与月报关键数据及收费档位，观点归原作者。",
+   "sourceNote": "来源：X · 虹安 @yaohongan2025，2026-11-17（约 4,047 浏览）。发现路径：每日监控轮换扫到 @yaohongan2025，2026-11-19 收录。网站：whyitearns.com ↗；作者邮箱 [email protected]。本页为结构化中文转述，保留六条收获的产品与数字、收据结构、两份深拆样本、机会池与月报关键数据及收费档位，观点归原作者。",
    "related": [
     "sites10",
     "posthogui",
@@ -461,9 +879,9 @@
    "stats": "9 回复 / 32 转帖 / 95 点赞 / 约 12 万观看",
    "sourceNote": "来源：X · ElevenCreative @ElevenCreative（ElevenLabs 关联账号），2026-11-17（9 回复 / 32 转帖 / 95 点赞 / 约 12 万观看），英文原文。本页按原文三种风格完整整理，保留全部流程步骤、提示词模板要点与参数，入口 Flows：elevenlabs.io/flows，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "d6fe287d6eb9"
@@ -496,9 +914,9 @@
    "stats": "34 回复 / 66 转帖 / 360 赞 / 602 书签 / 约 6.9 万观看",
    "sourceNote": "来源：X · WquGuru @wquguru，2026-11-17（34 回复 / 66 转帖 / 360 赞 / 602 书签 / 约 6.9 万观看）。本页按原文四步完整整理，保留资产库清单、定景定妆方法论、批量复制与舞剑视频的全部难点解法，提示词以要点形式呈现，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "f4f103861726"
@@ -531,9 +949,9 @@
    "stats": "66 回复 / 159 转帖 / 878 点赞 / 1,831 书签 / 约 14.7 万观看",
    "sourceNote": "来源：X · Leaf Yeah! @leaf_sanren，2026-11-17（66 回复 / 159 转帖 / 878 点赞 / 1,831 书签 / 约 14.7 万观看），经 @eianlu 转发发现。作者背景：哲学 - 数据分析 - 独立开发，SeeCut（数字人 + AI 网感剪辑）、talk-to-fengge（demo 在抖音百万播放）。本页按原文六节完整整理，保留三条出片路线的全部步骤、边界、账单与三段指令要点，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "8f2bd0ff0b84"
@@ -567,9 +985,9 @@
    "stats": "154 回复 / 433 转帖 / 3,455 赞 / 6,388 书签 / 约 37.4 万观看",
    "sourceNote": "来源：X · Addy Osmani @addyosmani（Claude Code @anthropicai），2026-11-17（154 回复 / 433 转帖 / 3,455 赞 / 6,388 书签 / 约 37.4 万观看），英文原文，经 @vikingmute 转发发现。本页按原文脉络完整整理，保留三种测试的全部要点与团队 review 纪律，观点归原作者。",
    "related": [
-    "chromium",
-    "grokbot",
-    "morry"
+    "shaoreview",
+    "shaobitter",
+    "wlzh"
    ],
    "relatedNote": null,
    "rev": "e84215e83440"
@@ -634,9 +1052,9 @@
    "stats": "74 回复 / 107 转帖 / 588 点赞 / 1,124 书签 / 约 22.9 万观看",
    "sourceNote": "来源：X · 雪瑜 @xueyu1125，2026-11-16（74 回复 / 107 转帖 / 588 点赞 / 1,124 书签 / 约 22.9 万观看）。本页按原文九节完整整理，保留四档价格、七点回报、三道门槛、模型分工表、Magpie 三方案与三个报错解法的全部要点，观点与风险提示归原作者。",
    "related": [
-    "chromium",
-    "grokbot",
-    "morry"
+    "shaoreview",
+    "shaobitter",
+    "wlzh"
    ],
    "relatedNote": null,
    "rev": "6236e9066a4e"
@@ -670,9 +1088,9 @@
    "stats": "0 回复 / 2 转帖 / 3 点赞 / 8 收藏 / 约 1.1 万浏览",
    "sourceNote": "来源：X · テツメモ｜AI図解×検証｜Newsletter @tetumemo，2026-11-14（0 回复 / 2 转帖 / 3 点赞 / 8 收藏 / 约 1.1 万浏览），日文原文。本页用中文按原文脉络结构化整理，保留事故链、八条对策与机制化防范的全部要点，观点归原作者。",
    "related": [
-    "chromium",
-    "grokbot",
-    "morry"
+    "shaoreview",
+    "shaobitter",
+    "wlzh"
    ],
    "relatedNote": null,
    "rev": "3b85edafb86f"
@@ -704,11 +1122,11 @@
    "stats": "15 回复 / 27 转帖 / 219 点赞 / 318 书签 / 约 17.6 万观看",
    "sourceNote": "来源：X · HyperFrames @HyperFrames_（关联 HeyGen），2026-11-13（15 回复 / 27 转帖 / 219 点赞 / 318 书签 / 约 17.6 万观看），英文原文。HyperFrames 免费开源，Studio 应用可在 Mac、Windows 与 Linux 上让智能体在预览旁运行（hyperframes.studio）；原文最初发表于 HyperFrames 博客。本页按原文脉络结构化整理，数据与结论归原作者。",
    "related": [
-    "dshcreator",
-    "dsh",
-    "chromium"
+    "manus",
+    "chromium",
+    "grokbot"
    ],
-   "relatedNote": null,
+   "relatedNote": "互推：Manus 张涛那篇同样主张「Less structure, more intelligence」，与本篇的 harness 观正面对照；Kyle Jeong 那篇讲 agent 在 Chromium 流水线里的实战，lauren 那篇讲 Grok Bot 自动化方法论。",
    "rev": "5d39fcb9f0e9"
   },
   {
@@ -739,9 +1157,9 @@
    "stats": "64 回复 / 351 转帖 / 2,951 点赞 / 3,631 书签 / 约 23.6 万观看",
    "sourceNote": "来源：X · Chrome for Developers @ChromiumDev（Google for Developers），2026-11-13（64 回复 / 351 转帖 / 2,951 点赞 / 3,631 书签 / 约 23.6 万观看），英文原文。本页按原文四节结构完整整理，保留全部案例数据与安装命令，观点归原作者。",
    "related": [
-    "chromium",
-    "grokbot",
-    "morry"
+    "shaoreview",
+    "shaobitter",
+    "wlzh"
    ],
    "relatedNote": null,
    "rev": "a1f9088f3bd4"
@@ -840,7 +1258,7 @@
    "related": [
     "grokstart",
     "grokbot",
-    "chromium"
+    "shaoreview"
    ],
    "relatedNote": "Grok Bot 三篇互推：小莫那篇讲从 0 到 1 的开通、模板与记忆清理全流程，lauren @poteto 那篇讲自动化方法论，本篇讲把微信记录送进 Grok Bot 的工具。",
    "rev": "758746f74e74"
@@ -872,9 +1290,9 @@
    "stats": "35 回复 / 2 转帖 / 70 点赞 / 11 书签 / 7,603 次观看",
    "sourceNote": "来源：X · 诺诺 @shenghouxuyao，2026-11-06（35 回复 / 2 转帖 / 70 点赞 / 11 书签 / 7,603 次观看）。本页按原文七节结构化整理，保留全部后台数据口径、分工与三个提醒，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "1c5a37fb12d8"
@@ -907,9 +1325,9 @@
    "stats": "854 回复 / 6,475 转帖 / 36,915 点赞 / 75,762 书签 / 约 564 万观看",
    "sourceNote": "来源：X · Eian @EianLu，2026-11-05（854 回复 / 6,475 转帖 / 36,915 点赞 / 75,762 书签 / 约 564 万观看）。本页按原文两大部分完整整理，保留工具分工、五点故事标准、分镜六要点、首尾帧绘制顺序、错误对照表要点与四线程模式，提示词以要点形式呈现，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "9afc5fa32a0a"
@@ -1078,9 +1496,9 @@
    "stats": null,
    "sourceNote": "来源：简盒 JianHeBox（页面未署个人作者名，仅标注作者团队），2026-11-02，页面标注约 12 分钟读完，数据核验时间为 2026 年 11 月 2 日，价格与额度以各平台官网公示为准。本页按原文结构化整理，保留速查表、成本公式与 FAQ，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "3cd0e9fc733d"
@@ -1115,7 +1533,7 @@
    "related": [
     "xianyu",
     "seedance",
-    "chromium"
+    "shaoreview"
    ],
    "relatedNote": "互推：闲鱼黑话篇把 Claude 账号在闲鱼上的暗语（A社、克劳德、kyc/3HK 纯净防封账号）列进了速查表，本篇讲这些账号背后的封号风控与斩杀线；另附 G哥的 Seedance 教程，同属 Claude / Codex 实操。",
    "rev": "f0623b51ada0"
@@ -1153,7 +1571,7 @@
    "related": [
     "cg",
     "grokbot",
-    "chromium"
+    "shaoreview"
    ],
    "relatedNote": "Grok Bot 三篇互推：铁柱 AGI 那篇讲把微信记录送进 Grok Bot 的工具（Grok Bot Anywhere），lauren @poteto 那篇讲用 Grok Bot 做自动化的通用方法论，本篇讲从 0 到 1 的开通、接 X、模板与记忆清理全流程。",
    "rev": "aeb2897439d0"
@@ -1184,10 +1602,10 @@
    "related": [
     "hf",
     "dshcreator",
-    "chromium"
+    "shaoreview"
    ],
    "relatedNote": null,
-   "rev": "212327c54e01"
+   "rev": "8607227bae99"
   },
   {
    "id": "xianyu",
@@ -1287,7 +1705,7 @@
    "related": [
     "codex101",
     "lemomo",
-    "chromium"
+    "shaoreview"
    ],
    "relatedNote": "互推：Codex 新手向与本篇同为 Sukiea1008 的 AI 效率方法论；Lemomo 的 lemo-animi 同属 Skill / Agent 工作流主题。",
    "rev": "5502b57f49cf"
@@ -1321,7 +1739,7 @@
    "related": [
     "lemomo",
     "naval",
-    "chromium"
+    "shaoreview"
    ],
    "relatedNote": "互推：Lemomo 的 lemo-animi 是 Codex / Claude Code 里 Skill 的实战案例；《纳瓦尔宝典》学习系统与本篇同为 Sukiea1008 的 AI 效率方法论。",
    "rev": "483a78a6455c"
@@ -1353,9 +1771,9 @@
    "stats": "164 点赞 / 26 转帖 / 约 6.1 万浏览",
    "sourceNote": "来源：X · Sukiea1008 @Sukiea1008，2026-07-31（164 点赞 / 26 转帖 / 约 6.1 万浏览）。发现路径：每日监控轮换扫到 @Sukiea1008，2026-11-19 收录。本页为结构化中文转述，保留双向链接机制、一级目录与 Index/Rules 入口、Properties 字段取舍、旧笔记整理法与同步备份之分，观点归原作者。",
    "related": [
-    "chromium",
-    "grokbot",
-    "morry"
+    "shaoreview",
+    "shaobitter",
+    "wlzh"
    ],
    "relatedNote": null,
    "rev": "3583c00b3f77"
@@ -1390,9 +1808,9 @@
    "stats": "81 点赞 / 13 转帖 / 约 3.5 万浏览",
    "sourceNote": "来源：X · Sukiea1008 @Sukiea1008，2026-07-18（81 点赞 / 13 转帖 / 约 3.5 万浏览）。发现路径：每日监控轮换扫到 @Sukiea1008，2026-11-19 收录。本页为结构化中文转述，保留最小闭环路径、公开仓库的注意事项、域名与备案的判断标准及 Cloudflare 的定位，观点归原作者。",
    "related": [
-    "chromium",
-    "grokbot",
-    "morry"
+    "shaoreview",
+    "shaobitter",
+    "wlzh"
    ],
    "relatedNote": null,
    "rev": "747eae5a9a3f"
@@ -1426,9 +1844,9 @@
    "stats": null,
    "sourceNote": "来源：36氪 · 36氪AI测评，2026-07-08 11:03。本页按原文结构化整理，保留六款工具的全部优劣判断与适配场景，观点归原作者。",
    "related": [
-    "lemomo",
-    "maubaron",
-    "fz"
+    "shortpost",
+    "ec2000s",
+    "heygen6"
    ],
    "relatedNote": null,
    "rev": "74912206e173"
