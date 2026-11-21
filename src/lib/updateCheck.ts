@@ -5,6 +5,8 @@ export const RELEASES_API_URL = 'https://api.github.com/repos/TPGoFighting/colle
 export const RELEASE_PAGE_URL = 'https://github.com/TPGoFighting/collect-native-app/releases/latest';
 
 export const UPDATE_CHECK_KEY = 'collect:update-check:v1';
+/** Version the user tapped "稍后再说" for — the launch dialog stays silent for it. */
+export const UPDATE_DISMISSED_KEY = 'collect:update-dismissed:v1';
 const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 10000;
 
@@ -60,6 +62,31 @@ export function isNewerVersion(remote: string, current: string): boolean {
     if (rv !== cv) return rv > cv;
   }
   return false;
+}
+
+/** True when the launch dialog should pop for `latest`: newer than current and not dismissed. */
+export function shouldShowUpdateDialog(latest: string, current: string, dismissed: string | null): boolean {
+  if (!latest || !current) return false;
+  if (dismissed === latest) return false;
+  return isNewerVersion(latest, current);
+}
+
+/** Version the user dismissed with "稍后再说", or null when none was dismissed. */
+export async function getDismissedUpdateVersion(): Promise<string | null> {
+  try {
+    return await AsyncStorage.getItem(UPDATE_DISMISSED_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** Silence the launch dialog for this version (the Home banner keeps reminding). */
+export async function dismissUpdate(version: string): Promise<void> {
+  try {
+    await AsyncStorage.setItem(UPDATE_DISMISSED_KEY, version);
+  } catch {
+    // Best-effort: a failed write just means the dialog may pop again.
+  }
 }
 
 /**

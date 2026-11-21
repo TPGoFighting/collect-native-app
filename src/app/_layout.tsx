@@ -12,6 +12,7 @@ import { initDb } from '@/lib/db';
 import { syncNow } from '@/lib/sync';
 import { registerBackgroundSync } from '@/lib/backgroundSync';
 import { configureNotificationChannel, notificationNavigation } from '@/lib/notifications';
+import { UpdateDialog } from '@/components/UpdateDialog';
 import { classifyIncomingUrl } from '@/lib/links';
 import { dispatchIncoming, setIncomingListener, type IncomingNavigation } from '@/lib/incoming';
 import { checkForUpdate } from '@/lib/updateCheck';
@@ -137,19 +138,22 @@ function RootLayoutContent() {
   if (!ready) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
-      <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
-      <Stack.Screen name="article/[id]" />
-      <Stack.Screen name="article/share-card" />
-      <Stack.Screen name="recommend" />
-      <Stack.Screen name="search" />
-      <Stack.Screen name="history" />
-      <Stack.Screen name="settings" />
-      <Stack.Screen name="about" />
-      <Stack.Screen name="privacy" />
-      <Stack.Screen name="notifications" />
-      <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+        <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
+        <Stack.Screen name="article/[id]" />
+        <Stack.Screen name="article/share-card" />
+        <Stack.Screen name="recommend" />
+        <Stack.Screen name="search" />
+        <Stack.Screen name="history" />
+        <Stack.Screen name="settings" />
+        <Stack.Screen name="about" />
+        <Stack.Screen name="privacy" />
+        <Stack.Screen name="notifications" />
+        <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
+      </Stack>
+      <UpdateDialog />
+    </>
   );
 }
 
