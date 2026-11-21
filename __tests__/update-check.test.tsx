@@ -94,13 +94,36 @@ describe('checkForUpdate', () => {
   });
 
   it('returns the release info when a newer version exists and caches it', async () => {
-    mockFetch.mockReturnValue(api({ tag_name: 'v2.2.0', html_url: 'https://github.com/TPGoFighting/collect-native-app/releases/tag/v2.2.0' }));
+    mockFetch.mockReturnValue(api({
+      tag_name: 'v2.2.0',
+      html_url: 'https://github.com/TPGoFighting/collect-native-app/releases/tag/v2.2.0',
+      assets: [
+        { name: 'collect-v2.2.0.apk', browser_download_url: 'https://github.com/TPGoFighting/collect-native-app/releases/download/v2.2.0/collect-v2.2.0.apk' },
+      ],
+    }));
+    const result = await checkForUpdate();
+    expect(result).toEqual({
+      version: '2.2.0',
+      url: 'https://github.com/TPGoFighting/collect-native-app/releases/download/v2.2.0/collect-v2.2.0.apk',
+    });
+    expect(JSON.parse(storage.get(UPDATE_CHECK_KEY)!).version).toBe('2.2.0');
+  });
+
+  it('falls back to the release page when the release carries no APK asset', async () => {
+    mockFetch.mockReturnValue(api({ tag_name: 'v2.2.0', html_url: 'https://github.com/TPGoFighting/collect-native-app/releases/tag/v2.2.0', assets: [] }));
     const result = await checkForUpdate();
     expect(result).toEqual({
       version: '2.2.0',
       url: 'https://github.com/TPGoFighting/collect-native-app/releases/tag/v2.2.0',
     });
-    expect(JSON.parse(storage.get(UPDATE_CHECK_KEY)!).version).toBe('2.2.0');
+  });
+
+  it('force bypasses the 24h cache for a screen the user is looking at', async () => {
+    storage.set(UPDATE_CHECK_KEY, JSON.stringify({ ts: Date.now(), version: null, url: null }));
+    mockFetch.mockReturnValue(api({ tag_name: 'v2.2.0', html_url: RELEASE_PAGE_URL }));
+    const result = await checkForUpdate({ force: true });
+    expect(mockFetch).toHaveBeenCalled();
+    expect(result?.version).toBe('2.2.0');
   });
 
   it('returns null and no UI when versions match', async () => {

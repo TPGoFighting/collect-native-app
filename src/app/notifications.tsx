@@ -14,8 +14,16 @@ import {
   setNotificationPref,
   type NotificationPref,
 } from '@/lib/notifications';
-import { registerBackgroundSync, unregisterBackgroundSync } from '@/lib/backgroundSync';
+import { registerBackgroundSync, unregisterBackgroundSync, getBackgroundSyncState, type BackgroundSyncState } from '@/lib/backgroundSync';
 import { lastSyncAt, lastSyncError } from '@/lib/sync';
+
+const BG_SYNC_LABEL: Record<BackgroundSyncState, string> = {
+  registered: '后台同步：已注册 · 系统按策略调度（每小时最多一次，不保证即时）',
+  failed: '后台同步：注册失败 · 前台打开时仍会同步',
+  unavailable: '后台同步：系统不可用 · 当前设备或省电状态不支持后台任务',
+  off: '后台同步：已关闭 · 按当前通知设置不注册后台任务',
+  unknown: '后台同步：尚未尝试注册',
+};
 
 const OPTIONS: { key: NotificationPref; label: string; detail: string }[] = [
   { key: 'all', label: '所有网络', detail: '任何可用网络下发现新文章都提醒' },
@@ -30,12 +38,14 @@ export default function NotificationSettingsScreen() {
   const [pref, setPref] = useState<NotificationPref>('all');
   const [syncedAt, setSyncedAt] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [bgSync, setBgSync] = useState<BackgroundSyncState>('unknown');
 
   const reload = useCallback(() => {
     getNotificationPermission().then(setPermission).catch(() => setPermission(false));
     setPref(getNotificationPref());
     setSyncedAt(lastSyncAt());
     setSyncError(lastSyncError());
+    setBgSync(getBackgroundSyncState());
   }, []);
   useFocusEffect(reload);
 
@@ -109,9 +119,10 @@ export default function NotificationSettingsScreen() {
         <Text style={[styles.status, { color: theme.textSecondary }]}>
           {syncedAt ? `上次同步：${syncedAt.replace('T', ' ').slice(0, 19)}` : '尚未同步'}
           {syncError ? `\n最近问题：${syncError}` : ''}
+          {`\n${BG_SYNC_LABEL[bgSync]}`}
         </Text>
         <Text style={[styles.hint, { color: theme.textSecondary }]}>
-          后台同步受系统省电策略限制，不保证即时到达；前台启动与回到前台时都会立即检查。每篇新文章只提醒一次。
+          后台同步受系统省电策略限制，不保证即时到达；前台启动与回到前台时都会立即检查。每篇新文章只提醒一次。{"\n"}国行系统（如 ColorOS）需在设置里允许自启动与后台活动，否则后台任务可能不执行。
         </Text>
       </ScrollView>
     </SafeAreaView>

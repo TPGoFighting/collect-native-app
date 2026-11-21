@@ -6,6 +6,7 @@ import {
   getArticleMeta,
   getMeta,
   listArticles,
+  pruneArticles,
   setMeta,
   upsertArticle,
 } from './db';
@@ -14,6 +15,7 @@ import { getNotificationPref, notifyNewArticle } from './notifications';
 export interface SyncResult {
   added: number;
   updated: number;
+  removed: number;
   total: number;
   fromCache: boolean;
   checkedAt: string;
@@ -96,6 +98,7 @@ export async function syncNow(options?: { background?: boolean }): Promise<SyncR
   const empty = (error?: string): SyncResult => ({
     added: 0,
     updated: 0,
+    removed: 0,
     total: listArticles().length,
     fromCache: false,
     checkedAt,
@@ -185,9 +188,16 @@ export async function syncNow(options?: { background?: boolean }): Promise<SyncR
     setMeta('list_updated_at', data.updated_at);
     setMeta('last_sync_at', checkedAt);
     setMeta('last_sync_error', failedIds.length ? `正文获取失败 ${failedIds.length} 篇` : '');
+    // Drop local articles the server no longer lists (deduped harvest draft,
+    // unlisted article). Guarded by a non-empty list so a truncated/empty
+    // server response can never wipe the local library.
+    const removed = data.articles.length > 0
+      ? pruneArticles(new Set(data.articles.map((m) => m.id)))
+      : 0;
     return {
       added,
       updated,
+      removed,
       total: data.articles.length,
       fromCache: false,
       checkedAt,

@@ -154,6 +154,28 @@ export function upsertArticle(a: Article | (ArticleMeta & { sections?: Section[]
   if ('sections' in a && a.sections) ftsUpsert(a.id, a.sections);
 }
 
+/**
+ * Remove local articles that are no longer on the server list (e.g. a
+ * harvested draft that was deduplicated, or an article unlisted from the
+ * site). Favorites/read/history/progress live in user_state keyed by id and
+ * are untouched; listFavorites/listHistory/listUnfinished already skip ids
+ * with no article row, so a pruned article simply disappears from those
+ * lists and reappears if the server ever lists it again.
+ * Only call with a fresh, non-empty server list — never on a failed fetch.
+ */
+export function pruneArticles(keepIds: Set<string>): number {
+  const rows = db.getAllSync<{ id: string }>('SELECT id FROM articles');
+  const stale = rows.map((r) => r.id).filter((id) => !keepIds.has(id));
+  if (!stale.length) return 0;
+  db.withTransactionSync(() => {
+    for (const id of stale) {
+      db.runSync('DELETE FROM articles WHERE id = ?', [id]);
+      db.runSync('DELETE FROM articles_fts WHERE article_id = ?', [id]);
+    }
+  });
+  return stale.length;
+}
+
 const META_COLS =
   'id,title,author,handle,platform,pname,date,mins,cover,cover_alt,summary,keywords,url,stats,source_note,related_json,related_note,rev';
 

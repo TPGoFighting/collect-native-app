@@ -2,6 +2,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
+import Constants from 'expo-constants';
 import * as WebBrowser from 'expo-web-browser';
 import { ArrowLeft } from 'lucide-react-native';
 import { useSettings } from '@/lib/theme';
@@ -10,6 +11,7 @@ import { UpdateBanner } from '@/components/UpdateBanner';
 export default function AboutScreen() {
   const { theme, isDark } = useSettings();
   const router = useRouter();
+  const version = Constants.expoConfig?.version ?? '2.1.3';
   const logo = isDark
     ? require('@/assets/logo-white-1024.png')
     : require('@/assets/logo-black-1024.png');
@@ -26,7 +28,7 @@ export default function AboutScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Image source={logo} style={styles.logo} contentFit="contain" />
         <Text style={[styles.name, { color: theme.text }]}>Collect</Text>
-        <Text style={[styles.version, { color: theme.textSecondary }]}>版本 2.1.2 · 原生安卓版</Text>
+        <Text style={[styles.version, { color: theme.textSecondary }]}>版本 {version} · 原生安卓版</Text>
         <UpdateBanner />
         <Text style={[styles.desc, { color: theme.text }]}>
           把微信、X、小红书、知乎的好文章收进一个口袋，随时离线阅读。文章来自

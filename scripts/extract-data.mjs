@@ -48,7 +48,7 @@ function arg(name, def) {
   const i = process.argv.indexOf(name);
   return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : def;
 }
-const HTML_PATH = arg('--html', path.join(process.env.HOME, 'workspace/your_files/collect/collect.html'));
+const HTML_PATH = arg('--html', path.join(process.env.HOME || '/root', 'workspace/your_files/collect/collect.html'));
 const OUT_DIR = arg('--out', '/tmp/collect-data');
 const SEED_DIR = arg('--seed', '');
 const html = fs.readFileSync(HTML_PATH, 'utf-8');

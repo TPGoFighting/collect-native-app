@@ -11,6 +11,7 @@ import { lastSyncAt, lastSyncError, syncNow } from '@/lib/sync';
 import { ArticleCard } from '@/components/ArticleCard';
 import { PlatformChips } from '@/components/PlatformChips';
 import { StateView } from '@/components/StateView';
+import { UpdateBanner } from '@/components/UpdateBanner';
 
 interface Row {
   key: string;
@@ -119,6 +120,9 @@ export default function HomeScreen() {
           <X size={16} color={theme.onAccent} />
         </Pressable>
       ) : null}
+      <View style={{ marginHorizontal: 16, marginTop: 8 }}>
+        <UpdateBanner />
+      </View>
       {offline ? (
         <View style={[styles.offline, { borderColor: theme.border }]}>
           <WifiOff size={14} color={theme.textSecondary} />

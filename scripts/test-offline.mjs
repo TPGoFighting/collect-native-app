@@ -103,7 +103,12 @@ if (LIVE) {
     const res = await fetch(`https://collect.tpgofighting.top/data/articles.json?v=${new Date().toISOString().slice(0, 13).replace(/[-T:]/g, '')}`);
     const live = await res.json();
     check('live articles.json reachable (200)', res.ok);
-    check('live count matches seed count', live.count === SEED.count, `live=${live.count} seed=${SEED.count}`);
+    // Live is a SUPERSET of the seed by design: the server pipeline merges
+    // approved harvest drafts + self-published articles into /data/ on top of
+    // the 64 site articles. So the invariant is coverage, not equality.
+    const liveIds = new Set(live.articles.map((a) => a.id));
+    const missing = SEED.articles.filter((a) => !liveIds.has(a.id)).map((a) => a.id);
+    check('live covers seed (superset: site + approved drafts)', missing.length === 0 && live.count >= SEED.count, `live=${live.count} seed=${SEED.count}${missing.length ? ` missing: ${missing.join(',')}` : ''}`);
     const liveRevs = new Map(live.articles.map((a) => [a.id, a.rev]));
     const mismatches = SEED.articles.filter((a) => liveRevs.get(a.id) !== a.rev).map((a) => a.id);
     check('live revs match seed revs (seed is current)', mismatches.length === 0, mismatches.length ? `stale: ${mismatches.join(',')}` : 'all current');

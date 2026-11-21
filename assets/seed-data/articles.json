@@ -1,8 +1,423 @@
 {
  "schema_version": 1,
- "updated_at": "2026-11-20T05:19:05.987Z",
- "count": 53,
+ "updated_at": "2026-11-21T06:17:21.453Z",
+ "count": 64,
  "articles": [
+  {
+   "id": "firstorder",
+   "title": "补一篇首单复盘：54 天、259 个注册、十几笔弃单，第一单到底是怎么来的",
+   "author": "浅水虾 @qianshuixia2026",
+   "handle": "qianshuixia2026",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-21",
+   "mins": 13,
+   "cover": "https://collect.tpgofighting.top/assets/covers/firstorder.webp",
+   "coverAlt": "出海建站首单复盘收录封面",
+   "summary": "完整长文版：出海建站首单复盘——9/19 写代码、10/20 支付接通、11/1 上线、11/6 ChatGPT 流量进来、11/12 首单 12 美元月订阅；首单用户 3 次打开付费页、注册 9 小时后付款，首单前 14 笔结账单全过期——问题在结账页本身（Stripe Link 手机号必填与多余条款框）；首月注册 259 个、付费 3 人、MRR 41 美元，结账转化 20%、上传素材做出成品 83% vs 纯文字 49%、24 小时回访仅 12%。",
+   "keywords": [
+    "首单",
+    "复盘",
+    "出海",
+    "建站",
+    "stripe",
+    "link",
+    "结账",
+    "付费墙",
+    "chatgpt",
+    "搜索",
+    "转化",
+    "浅水虾",
+    "qianshuixia",
+    "独立开发"
+   ],
+   "url": "https://x.com/qianshuixia2026/article/2123950320648954267",
+   "stats": null,
+   "sourceNote": "来源：X · 浅水虾 @qianshuixia2026，2026-11-21。发现路径：每日监控轮换扫到 @qianshuixia2026，2026-11-21 收录。本页为结构化中文转述，保留时间线、结账页两坑、付费墙收紧与首月全部关键数据，观点归原作者。",
+   "related": [
+    "anthropic7",
+    "marketing27",
+    "posthogui"
+   ],
+   "relatedNote": null,
+   "rev": "ddc9fa6c5576"
+  },
+  {
+   "id": "anthropic7",
+   "title": "Anthropic 七剑客：全员跨界，做出史上最大 IPO",
+   "author": "WquGuru @wquguru",
+   "handle": "wquguru",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-20",
+   "mins": 11,
+   "cover": "https://collect.tpgofighting.top/assets/covers/anthropic7.webp",
+   "coverAlt": "Anthropic 七剑客创始人故事收录封面",
+   "summary": "完整长文版：Anthropic 募资 813 亿美元上市之际，七位联合创始人的跨界早年——Dario 物理博士转生物医学、31 岁才进 AI；Daniela 英语文学学位从 Stripe 首位招聘做起；Kaplan 物理任教十五年、休假组读书会跨界并写出 Scaling Laws；McCandlish 量子引力出身；Tom Brown 线性代数 B-、火人节后自学 ML 成 GPT-3 一作；Chris Olah 大一退学凭 Distill 进 OpenAI；Jack Clark 英文系记者写 Import AI 写成联合创始人。",
+   "keywords": [
+    "anthropic",
+    "创始人",
+    "dario",
+    "amodei",
+    "daniela",
+    "kaplan",
+    "mccandlish",
+    "tom",
+    "brown",
+    "chris",
+    "olah",
+    "jack",
+    "clark",
+    "ipo",
+    "scaling",
+    "laws",
+    "wquguru"
+   ],
+   "url": "https://x.com/wquguru/article/2123724034563354641",
+   "stats": null,
+   "sourceNote": "来源：X · WquGuru @wquguru，2026-11-20。发现路径：每日监控重点号 @wquguru，2026-11-21 收录。本页为结构化中文转述，保留七位创始人的跨界轨迹与关键节点，观点归原作者。",
+   "related": [
+    "firstorder",
+    "marketing27",
+    "posthogui"
+   ],
+   "relatedNote": null,
+   "rev": "9f0825e8846b"
+  },
+  {
+   "id": "blgvideo",
+   "title": "AI做视频哪家强？我让GPT-6.2 Astra/Sol 等5个模型各做了一支BLG夺冠短片，效果最好的居然是……",
+   "author": "金尘马 @jinchenma_ai",
+   "handle": "jinchenma_ai",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-20",
+   "mins": 6,
+   "cover": "https://collect.tpgofighting.top/assets/covers/blgvideo.webp",
+   "coverAlt": "五模型 BLG 夺冠短片横评收录封面",
+   "summary": "完整长文版：同一提示词让 5 个模型各做一支 BLG 夺冠短片（自找素材、写代码做动画、配音乐）——Opus 5.5《赛点》综合第一；Astra《再赢一局》第二，唯一剪进真实比赛录像与夺冠现场、查到 XUN 抢大龙细节；WorkBuddy + DeepSeek《九年》最懂中国观众，唯一讲出 BLG 赢 T1 对 LPL 的意义；Sol 中规中矩，Grok Bot 陪跑。与 Eian、Leaf 等 AI 视频实操篇对照读。",
+   "keywords": [
+    "blg",
+    "英雄联盟",
+    "全球总决赛",
+    "视频",
+    "横评",
+    "opus",
+    "astra",
+    "sol",
+    "deepseek",
+    "grok",
+    "bot",
+    "金尘马",
+    "jinchenma"
+   ],
+   "url": "https://x.com/jinchenma_ai/article/2123610893837901849",
+   "stats": null,
+   "sourceNote": "来源：X · 金尘马 @jinchenma_ai，2026-11-20。发现路径：每日监控经 @eianlu 转发扫到，2026-11-21 收录。本页为结构化中文转述，保留五支短片的逐支点评与作者判断，观点归原作者。",
+   "related": [
+    "fableaudio",
+    "redline",
+    "shortpost"
+   ],
+   "relatedNote": null,
+   "rev": "b740de7f4638"
+  },
+  {
+   "id": "fableaudio",
+   "title": "How to make your Fable 5.2 Videos Sound as Good as They Look",
+   "author": "ElevenCreative @ElevenCreative",
+   "handle": "ElevenCreative",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-20",
+   "mins": 5,
+   "cover": "https://collect.tpgofighting.top/assets/covers/fableaudio.webp",
+   "coverAlt": "Fable 5.2 视频声音设计指南收录封面",
+   "summary": "完整长文版（英文原文）：Fable 5.2 视频声音设计全流程——三个让视频听起来很假的错误（没声音、音效不符、时机错位），与在 Claude 里修好声音的 5 步：接 ElevenLabs MCP、一个提示词同时设计音效与音乐（SFX v3 + Music v2.5）、反复生成、让 Claude 当剪辑师对齐时刻、下载成片。与同作者 2000s 游戏预告篇同属 Flows 玩法系列。",
+   "keywords": [
+    "fable",
+    "elevenlabs",
+    "mcp",
+    "sfx",
+    "music",
+    "声音设计",
+    "音效",
+    "ai",
+    "视频",
+    "claude",
+    "elevencreative"
+   ],
+   "url": "https://x.com/ElevenCreative/article/2123829632000745603",
+   "stats": null,
+   "sourceNote": "来源：X · ElevenCreative @ElevenCreative，2026-11-20。发现路径：每日监控重点号 @ElevenCreative，2026-11-21 收录。本页为结构化中文转述（原文为英文），保留三个错误与五步流程，观点归原作者。",
+   "related": [
+    "blgvideo",
+    "redline",
+    "shortpost"
+   ],
+   "relatedNote": null,
+   "rev": "c98c3c7e903a"
+  },
+  {
+   "id": "ultrafast",
+   "title": "How I stay in the flow with Ultrafast",
+   "author": "dominik kundel @dkundel",
+   "handle": "dkundel",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-20",
+   "mins": 6,
+   "cover": "https://collect.tpgofighting.top/assets/covers/ultrafast.webp",
+   "coverAlt": "Ultrafast 心流工作法收录封面",
+   "summary": "完整长文版（英文原文）：随 GPT-6.2 Astra / Sol 推出的 Ultrafast 让 Codex token 生成最高快 4.5 倍，把 DevTools 式边试边改的心流带回来——热重载、应用内浏览器并排、一次一个小反馈、标注指改动处、听写排任务、低推理起步、验证移出迭代循环；也讲清它不太有用的场景（工具调用占大头、图片生成、长验证任务）与 API 用法（service_tier=ultrafast，推广价 3 倍至 2027-02-28）。",
+   "keywords": [
+    "ultrafast",
+    "codex",
+    "gpt",
+    "astra",
+    "sol",
+    "心流",
+    "flow",
+    "dkundel",
+    "openai",
+    "迭代",
+    "api",
+    "service_tier"
+   ],
+   "url": "https://x.com/dkundel/article/2123868868963889153",
+   "stats": null,
+   "sourceNote": "来源：X · dominik kundel @dkundel，2026-11-20。发现路径：每日监控经 @OpenAIDevs 转发扫到，2026-11-21 收录。本页为结构化中文转述（原文为英文），保留心流做法、适用边界与定价信息，观点归原作者。",
+   "related": [
+    "healthsys",
+    "ultra",
+    "game3d"
+   ],
+   "relatedNote": null,
+   "rev": "1ddcfeb8eadf"
+  },
+  {
+   "id": "redline",
+   "title": "Hitting REDLINE: How to Make a Cinematic Racing Film with Kling 4.0",
+   "author": "Kling AI @Kling_ai",
+   "handle": "Kling_ai",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-20",
+   "mins": 8,
+   "cover": "https://collect.tpgofighting.top/assets/covers/redline.webp",
+   "coverAlt": "Kling REDLINE 电影感赛车片幕后收录封面",
+   "summary": "完整长文版（英文原文）：Kling AI 原创短片《REDLINE》幕后——Kling 4.0 与导演 Stephane Benini 合作的雨夜赛车片，电影感三来源：四种镜头语言（低角度、车内 POV、跟拍、广角航拍）与单镜头最多 10 张关键帧、光影与湿路面质感、靠面部细微变化的人物表演（Elias 与 Elle 的噩梦剧情），每部分附提示词技巧。与 G哥的 Seedance 教程、Eian 的视频全流程同属 AI 视频实操。",
+   "keywords": [
+    "kling",
+    "redline",
+    "赛车",
+    "电影感",
+    "运镜",
+    "关键帧",
+    "stephane",
+    "benini",
+    "ai",
+    "短片",
+    "提示词"
+   ],
+   "url": "https://x.com/Kling_ai/article/2123738670335209519",
+   "stats": null,
+   "sourceNote": "来源：X · Kling AI @Kling_ai，2026-11-20。发现路径：每日监控重点号 @Kling_ai，2026-11-21 收录。本页为结构化中文转述（原文为英文），保留四种镜头语言、三条提示词技巧与剧情梗概，观点归原作者。",
+   "related": [
+    "blgvideo",
+    "fableaudio",
+    "shortpost"
+   ],
+   "relatedNote": null,
+   "rev": "01b5d48a0838"
+  },
+  {
+   "id": "healthsys",
+   "title": "保姆级教程：手把手教你给自己和爸妈搭一套AI健康系统（提示词&命令行全开源！）",
+   "author": "AYi @AYi_AInotes",
+   "handle": "AYi_AInotes",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-20",
+   "mins": 14,
+   "cover": "https://collect.tpgofighting.top/assets/covers/healthsys.webp",
+   "coverAlt": "AI 健康系统 Mirobody 教程收录封面",
+   "summary": "完整长文版：用开源健康引擎 Mirobody 给全家搭本地 AI 健康系统——先标准化再让 AI 查（LOINC 2.83 的 63,416 个编码、331 个 UCUM 单位规则，ESL-Bench 准确率 48%–58% vs RAG 30%–38%）；跨年份跨语言化验单并成趋势线且每个数字可溯源、关爱圈管父母档案（1,208 条读数）、一句话记健康日记；零代码演示、Docker 与纯本地部署、8 条命令接进 Claude Code / Cursor / Codex，附隐私边界四条。",
+   "keywords": [
+    "mirobody",
+    "健康",
+    "体检",
+    "loinc",
+    "ucum",
+    "标准化",
+    "父母",
+    "本地部署",
+    "mcp",
+    "ayi",
+    "theta",
+    "health"
+   ],
+   "url": "https://x.com/AYi_AInotes/article/2123597148914635026",
+   "stats": null,
+   "sourceNote": "来源：X · AYi @AYi_AInotes，2026-11-20。发现路径：每日监控轮换扫到 @AYi_AInotes，2026-11-21 收录。本页为结构化中文转述，保留标准化方法、ESL-Bench 数据、三件事与四条边界，观点归原作者。",
+   "related": [
+    "ultrafast",
+    "ultra",
+    "game3d"
+   ],
+   "relatedNote": null,
+   "rev": "c69064243fe8"
+  },
+  {
+   "id": "ultra",
+   "title": "订阅 Google AI Ultra 的正确姿势 & 回血大法",
+   "author": "刘老板 @leo_xiaolei",
+   "handle": "leo_xiaolei",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-20",
+   "mins": 10,
+   "cover": "https://collect.tpgofighting.top/assets/covers/ultra.webp",
+   "coverAlt": "Google AI Ultra 订阅与回血指南收录封面",
+   "summary": "完整长文版：土区红利退潮后（涨价前 20x 最低约 ¥410/月，涨价后接近美区）的 Ultra 订阅全解——家庭组核心额度是全组共享周限额、后台无按人分配与用量明细；最稳姿势是 2–3 位熟人合订 20x，闲鱼席位两档价（30–50 元与 ¥150–400）与三大坑；回血四法（出租席位变现 150–250 元/月、小号自产自销、GCP 赠金绑卡自用、Flow 代生成）与两条红线（不卖 Colab、不卖 GCP 赠金）。与 Antigravity 攻略篇同主题。",
+   "keywords": [
+    "google",
+    "ai",
+    "ultra",
+    "订阅",
+    "家庭组",
+    "antigravity",
+    "flow",
+    "土耳其",
+    "闲鱼",
+    "席位",
+    "回血",
+    "leo_xiaolei",
+    "刘老板",
+    "gemini"
+   ],
+   "url": "https://x.com/leo_xiaolei/article/2123695069580365974",
+   "stats": null,
+   "sourceNote": "来源：X · 刘老板 @leo_xiaolei，2026-11-20。发现路径：每日监控轮换扫到 @leo_xiaolei，2026-11-21 收录。本页为结构化中文转述，保留家庭组共享规则、三种上车姿势与回血红线，观点归原作者；价格为原文 2026-11-20 参考值，下单以结账页为准。",
+   "related": [
+    "ultrafast",
+    "healthsys",
+    "game3d"
+   ],
+   "relatedNote": null,
+   "rev": "bc7221920743"
+  },
+  {
+   "id": "game3d",
+   "title": "不用等版号！一个人靠 AI 搓出 3D 小游戏直接过审上线，从建游到接广告赚钱的全套开源工具全公开",
+   "author": "Fini.Yang @FiniYang",
+   "handle": "FiniYang",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-20",
+   "mins": 16,
+   "cover": "https://collect.tpgofighting.top/assets/covers/game3d.webp",
+   "coverAlt": "AI 搓出 3D 小游戏过审上线全公开收录封面",
+   "summary": "完整长文版：3D 三消《一箱见底》个人主体一把过审全流程——免版号规则（无内购、1 张身份证 5 个号、¥30/年认证、100 UV 开流量主、种子计划 90 天仅 1 次）、开源插件 dsh-game-studio 的 15 个 MCP 工具原生打通 Codex / Claude Code / Antigravity / DSH、真机微信 5 个隐形杀手与预审体检、单源直出 3.60 MB 微信包、过审 3 大雷区与 11 张提审图清单、运营素材规格全表。",
+   "keywords": [
+    "微信小游戏",
+    "3d",
+    "一箱见底",
+    "版号",
+    "过审",
+    "dsh",
+    "game",
+    "studio",
+    "mcp",
+    "流量主",
+    "激励视频",
+    "finiyang"
+   ],
+   "url": "https://x.com/FiniYang/article/2123725927414972793",
+   "stats": null,
+   "sourceNote": "来源：X · Fini.Yang @FiniYang，2026-11-20。发现路径：每日监控轮换扫到 @FiniYang，2026-11-21 收录。本页为结构化中文转述，保留免版号规则、四步施工单、过审雷区与素材规格，观点归原作者。",
+   "related": [
+    "ultrafast",
+    "healthsys",
+    "ultra"
+   ],
+   "relatedNote": null,
+   "rev": "3b264f8291f4"
+  },
+  {
+   "id": "skillsync",
+   "title": "I Told AI to Stop Reading My Articles",
+   "author": "Fokki @0x_fokki",
+   "handle": "0x_fokki",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 12,
+   "cover": "https://collect.tpgofighting.top/assets/covers/skillsync.webp",
+   "coverAlt": "Skillsync 帖子变 Skill 收录封面",
+   "summary": "完整长文版（英文原文）：330 万浏览的文章变成 Skill——Skillsync（YC 支持）用 skill-creator 把帖子写成 SKILL.md、发布到个人 Profile、读者一键入库、一个 MCP 连接器接入 Claude / ChatGPT / Claude Code / Codex；实测 Agent 18 秒自选对 Skill 并说明跳过相邻项的原因，Copy prompt 一行让读者 Agent 自装连接器，统计页的 Agent uses 一列告诉作者谁的 Agent 真的跑了它。附 5 个只读工具清单。",
+   "keywords": [
+    "skillsync",
+    "skill",
+    "mcp",
+    "skill-creator",
+    "agent",
+    "uses",
+    "fokki",
+    "帖子",
+    "y",
+    "combinator",
+    "claude",
+    "codex"
+   ],
+   "url": "https://x.com/0x_fokki/article/2123446195909484876",
+   "stats": null,
+   "sourceNote": "来源：X · Fokki @0x_fokki，2026-11-19。发现路径：每日监控经 @shmidtqq 转发扫到，2026-11-21 收录。本页为结构化中文转述（原文为英文），保留八步流程、18 秒实测与只读工具清单，观点归原作者。",
+   "related": [
+    "ultrafast",
+    "healthsys",
+    "ultra"
+   ],
+   "relatedNote": null,
+   "rev": "7e2058e90974"
+  },
+  {
+   "id": "marketing27",
+   "title": "5 marketing predictions for 2027",
+   "author": "Stacy Muur @stacy_muur",
+   "handle": "stacy_muur",
+   "platform": "x",
+   "pname": "X",
+   "date": "2026-11-19",
+   "mins": 7,
+   "cover": "https://collect.tpgofighting.top/assets/covers/marketing27.webp",
+   "coverAlt": "2027 营销五大预测收录封面",
+   "summary": "完整长文版（英文原文）：10 年 GTM 经验、参考 41 份报告的 2027 营销五大预测——PR 与外链复兴（AI 引用 URL 仅约 12% 进 Google 前 10，Ahrefs）、网红泡沫泄气（35% 消费者因 AI 内容泛滥减少依赖网红，Gartner）、品牌用人制内容突围（57% 认为 AI 内容降低品牌信任）、客户开发与核心用户触达成稀缺资产（独资创始人占 36.3%，Carta）、个人品牌驱动公司增长（72% 更愿互动像人的内容）。",
+   "keywords": [
+    "marketing",
+    "2027",
+    "预测",
+    "gtm",
+    "pr",
+    "外链",
+    "网红",
+    "个人品牌",
+    "stacy",
+    "muur",
+    "gartner",
+    "ahrefs"
+   ],
+   "url": "https://x.com/stacy_muur/article/2123300703280181700",
+   "stats": null,
+   "sourceNote": "来源：X · Stacy Muur @stacy_muur，2026-11-19。发现路径：每日监控经 @Mr_Buzzoni 转发扫到，2026-11-21 收录。本页为结构化中文转述（原文为英文），保留五大预测与全部关键数据出处，观点归原作者。",
+   "related": [
+    "firstorder",
+    "anthropic7",
+    "posthogui"
+   ],
+   "relatedNote": null,
+   "rev": "aaffe8080443"
+  },
   {
    "id": "shaoreview",
    "title": "Claude Code 团队是怎么做 code review 的？——分层检查后，合并 PR 翻倍、回滚降超 40%",
@@ -530,8 +945,8 @@
    "sourceNote": "来源：X · Lemomo @lemomo_ai，2026-11-18（52 评论 / 66 转发 / 297 点赞 / 约 2.5 万浏览）。发现路径：重点监控号 @eianlu 转发，2026-11-19 每日监控扫到。本页为结构化中文转述，保留安装命令、8 种风格与样片故事、时长对照、审片台用法与许可证条款，观点归原作者。",
    "related": [
     "maubaron",
-    "shortpost",
-    "ec2000s"
+    "blgvideo",
+    "fableaudio"
    ],
    "relatedNote": "姊妹篇：Mau Baron 那篇讲动画账号怎么选形式、批量生产并变现，这篇讲怎么用 agent skill 把定格动画本身做出来——一篇给做法，一篇给赚法，对照着读。",
    "rev": "ce6c8fb928c7"
@@ -568,8 +983,8 @@
    "sourceNote": "来源：X · Mau Baron @maubaron，2026-11-18（15 评论 / 48 转发 / 322 点赞 / 约 6.9 万浏览）。发现路径：重点监控号 @eianlu 转发，2026-11-19 每日监控扫到。文末推广 Postiz（注明由 Postiz 赞助），作者另有工具 ViewTrack。本页为结构化中文转述，保留十步流程、五要素拆解、两处提示词大意、关键账号数据与五种变现方式，不做全文翻译，观点归原作者。",
    "related": [
     "lemomo",
-    "shortpost",
-    "ec2000s"
+    "blgvideo",
+    "fableaudio"
    ],
    "relatedNote": null,
    "rev": "dd588d02e624"
@@ -602,9 +1017,9 @@
    "stats": "4 评论 / 5 转发 / 64 点赞 / 约 1 万浏览",
    "sourceNote": "来源：X · PostHog @posthog，2026-11-18（4 评论 / 5 转发 / 64 点赞 / 约 1 万浏览），封面署名 Cleo Lant。发现路径：重点监控号 @posthog，2026-11-19 每日监控扫到。本页为结构化中文转述，保留事故经过、新导航五入口与各自回答的问题、新 Home 三段结构及会话回放数据，不做全文翻译，观点归原作者。",
    "related": [
-    "whyitearns",
-    "xhs",
-    "mds"
+    "firstorder",
+    "anthropic7",
+    "marketing27"
    ],
    "relatedNote": null,
    "rev": "cc007f4dcd4a"
@@ -637,9 +1052,9 @@
    "stats": "44 回复 / 40 转帖 / 206 点赞 / 318 书签 / 约 2.4 万观看",
    "sourceNote": "来源：X · 阿哲Phil @Formulasearch（AI Builder & Visual Designer），2026-11-18（44 回复 / 40 转帖 / 206 点赞 / 318 书签 / 约 2.4 万观看），经 @eianlu 转发发现。本页按原文六步完整整理，保留 Knockin' 贯穿案例、四种开头方式与代码动画的全部要点，观点归原作者。",
    "related": [
-    "shortpost",
-    "ec2000s",
-    "heygen6"
+    "blgvideo",
+    "fableaudio",
+    "redline"
    ],
    "relatedNote": null,
    "rev": "0afbac6a5613"
@@ -738,9 +1153,9 @@
    "stats": "原文对象创建于 2026-11-07；1 回复 / 1 转帖 / 3 点赞 / 2 书签 / 223 次观看",
    "sourceNote": "来源：X · Morry.AI @Morry4AI，2026-11-18 重新发布（原文对象创建于 2026-11-07；1 回复 / 1 转帖 / 3 点赞 / 2 书签 / 223 次观看）。本页按原文四节完整整理，保留两条英文指令原文、安装指令要点与四步流程，观点归原作者。",
    "related": [
-    "shaoreview",
-    "shaobitter",
-    "wlzh"
+    "ultrafast",
+    "healthsys",
+    "ultra"
    ],
    "relatedNote": null,
    "rev": "95d645df00d2"
@@ -771,9 +1186,9 @@
    "stats": "27 回复 / 17 转帖 / 72 点赞 / 75 书签 / 9,356 次观看",
    "sourceNote": "来源：X · Lonely @Lonely__MH，2026-11-18（27 回复 / 17 转帖 / 72 点赞 / 75 书签 / 9,356 次观看），经 @xueyu1125 转发发现，作者为 Lonely。本页按原文结构化整理，保留常规五步、手机五步、技能推荐与四条技巧，观点归原作者。",
    "related": [
-    "shortpost",
-    "ec2000s",
-    "heygen6"
+    "blgvideo",
+    "fableaudio",
+    "redline"
    ],
    "relatedNote": null,
    "rev": "c65511eb62c7"
@@ -808,9 +1223,9 @@
    "stats": "21 评论 / 52 转发 / 322 点赞 / 约 4.8 万浏览",
    "sourceNote": "来源：X · govin.eth | G哥 @goan999999，2026-11-17（21 评论 / 52 转发 / 322 点赞 / 约 4.8 万浏览）。发现路径：每日监控轮换扫到 @goan999999，2026-11-19 收录。作者为韩国硕士、AI 产品经理。本页为结构化中文转述，保留分镜与定妆的提示词要点、三段导演提示词的逐秒安排、自查四步与排错方法，不照搬原文完整提示词，观点归原作者。",
    "related": [
-    "shortpost",
-    "ec2000s",
-    "heygen6"
+    "blgvideo",
+    "fableaudio",
+    "redline"
    ],
    "relatedNote": null,
    "rev": "2da87d95ff7e"
@@ -846,8 +1261,8 @@
    "sourceNote": "来源：X · 虹安 @yaohongan2025，2026-11-17（约 4,047 浏览）。发现路径：每日监控轮换扫到 @yaohongan2025，2026-11-19 收录。网站：whyitearns.com ↗；作者邮箱 [email protected]。本页为结构化中文转述，保留六条收获的产品与数字、收据结构、两份深拆样本、机会池与月报关键数据及收费档位，观点归原作者。",
    "related": [
     "sites10",
-    "posthogui",
-    "xhs"
+    "firstorder",
+    "anthropic7"
    ],
    "relatedNote": "姊妹篇：同作者虹安 11 月 3 日那篇是他自己 18 天做 10 个出海站的实录，本篇拆的是别人赚钱的产品——一篇看自己，一篇看别人。",
    "rev": "1811c613ff44"
@@ -879,9 +1294,9 @@
    "stats": "9 回复 / 32 转帖 / 95 点赞 / 约 12 万观看",
    "sourceNote": "来源：X · ElevenCreative @ElevenCreative（ElevenLabs 关联账号），2026-11-17（9 回复 / 32 转帖 / 95 点赞 / 约 12 万观看），英文原文。本页按原文三种风格完整整理，保留全部流程步骤、提示词模板要点与参数，入口 Flows：elevenlabs.io/flows，观点归原作者。",
    "related": [
-    "shortpost",
-    "ec2000s",
-    "heygen6"
+    "blgvideo",
+    "fableaudio",
+    "redline"
    ],
    "relatedNote": null,
    "rev": "d6fe287d6eb9"
@@ -914,9 +1329,9 @@
    "stats": "34 回复 / 66 转帖 / 360 赞 / 602 书签 / 约 6.9 万观看",
    "sourceNote": "来源：X · WquGuru @wquguru，2026-11-17（34 回复 / 66 转帖 / 360 赞 / 602 书签 / 约 6.9 万观看）。本页按原文四步完整整理，保留资产库清单、定景定妆方法论、批量复制与舞剑视频的全部难点解法，提示词以要点形式呈现，观点归原作者。",
    "related": [
-    "shortpost",
-    "ec2000s",
-    "heygen6"
+    "blgvideo",
+    "fableaudio",
+    "redline"
    ],
    "relatedNote": null,
    "rev": "f4f103861726"
@@ -949,9 +1364,9 @@
    "stats": "66 回复 / 159 转帖 / 878 点赞 / 1,831 书签 / 约 14.7 万观看",
    "sourceNote": "来源：X · Leaf Yeah! @leaf_sanren，2026-11-17（66 回复 / 159 转帖 / 878 点赞 / 1,831 书签 / 约 14.7 万观看），经 @eianlu 转发发现。作者背景：哲学 - 数据分析 - 独立开发，SeeCut（数字人 + AI 网感剪辑）、talk-to-fengge（demo 在抖音百万播放）。本页按原文六节完整整理，保留三条出片路线的全部步骤、边界、账单与三段指令要点，观点归原作者。",
    "related": [
-    "shortpost",
-    "ec2000s",
-    "heygen6"
+    "blgvideo",
+    "fableaudio",
+    "redline"
    ],
    "relatedNote": null,
    "rev": "8f2bd0ff0b84"
@@ -985,9 +1400,9 @@
    "stats": "154 回复 / 433 转帖 / 3,455 赞 / 6,388 书签 / 约 37.4 万观看",
    "sourceNote": "来源：X · Addy Osmani @addyosmani（Claude Code @anthropicai），2026-11-17（154 回复 / 433 转帖 / 3,455 赞 / 6,388 书签 / 约 37.4 万观看），英文原文，经 @vikingmute 转发发现。本页按原文脉络完整整理，保留三种测试的全部要点与团队 review 纪律，观点归原作者。",
    "related": [
-    "shaoreview",
-    "shaobitter",
-    "wlzh"
+    "ultrafast",
+    "healthsys",
+    "ultra"
    ],
    "relatedNote": null,
    "rev": "e84215e83440"
@@ -1017,9 +1432,9 @@
    "stats": "56 赞 / 7 收藏",
    "sourceNote": "来源：小红书 · 财联社，财报发布于 2026-11-17，2026-11-18 查看（56 赞 / 7 收藏）。本页按原文脉络完整整理，保留两组财报数据、投资波动全数、门店构成与双市场股价，观点归原作者。",
    "related": [
-    "posthogui",
-    "whyitearns",
-    "mds"
+    "firstorder",
+    "anthropic7",
+    "marketing27"
    ],
    "relatedNote": null,
    "rev": "adb151d84128"
@@ -1052,9 +1467,9 @@
    "stats": "74 回复 / 107 转帖 / 588 点赞 / 1,124 书签 / 约 22.9 万观看",
    "sourceNote": "来源：X · 雪瑜 @xueyu1125，2026-11-16（74 回复 / 107 转帖 / 588 点赞 / 1,124 书签 / 约 22.9 万观看）。本页按原文九节完整整理，保留四档价格、七点回报、三道门槛、模型分工表、Magpie 三方案与三个报错解法的全部要点，观点与风险提示归原作者。",
    "related": [
-    "shaoreview",
-    "shaobitter",
-    "wlzh"
+    "ultrafast",
+    "healthsys",
+    "ultra"
    ],
    "relatedNote": null,
    "rev": "6236e9066a4e"
@@ -1088,9 +1503,9 @@
    "stats": "0 回复 / 2 转帖 / 3 点赞 / 8 收藏 / 约 1.1 万浏览",
    "sourceNote": "来源：X · テツメモ｜AI図解×検証｜Newsletter @tetumemo，2026-11-14（0 回复 / 2 转帖 / 3 点赞 / 8 收藏 / 约 1.1 万浏览），日文原文。本页用中文按原文脉络结构化整理，保留事故链、八条对策与机制化防范的全部要点，观点归原作者。",
    "related": [
-    "shaoreview",
-    "shaobitter",
-    "wlzh"
+    "ultrafast",
+    "healthsys",
+    "ultra"
    ],
    "relatedNote": null,
    "rev": "3b85edafb86f"
@@ -1157,9 +1572,9 @@
    "stats": "64 回复 / 351 转帖 / 2,951 点赞 / 3,631 书签 / 约 23.6 万观看",
    "sourceNote": "来源：X · Chrome for Developers @ChromiumDev（Google for Developers），2026-11-13（64 回复 / 351 转帖 / 2,951 点赞 / 3,631 书签 / 约 23.6 万观看），英文原文。本页按原文四节结构完整整理，保留全部案例数据与安装命令，观点归原作者。",
    "related": [
-    "shaoreview",
-    "shaobitter",
-    "wlzh"
+    "ultrafast",
+    "healthsys",
+    "ultra"
    ],
    "relatedNote": null,
    "rev": "a1f9088f3bd4"
@@ -1191,9 +1606,9 @@
    "stats": "10 回复 / 19 转帖 / 75 点赞 / 119 书签 / 约 2.6 万观看",
    "sourceNote": "来源：X · PostHog @posthog，2026-11-12（10 回复 / 19 转帖 / 75 点赞 / 119 书签 / 约 2.6 万观看），英文原文。本页按原文脉络结构化整理，数据与观点归原作者；文中对 PostHog 自家工具的介绍为原文内容，一并保留。",
    "related": [
-    "posthogui",
-    "whyitearns",
-    "xhs"
+    "firstorder",
+    "anthropic7",
+    "marketing27"
    ],
    "relatedNote": null,
    "rev": "7fbfeb37acf5"
@@ -1258,7 +1673,7 @@
    "related": [
     "grokstart",
     "grokbot",
-    "shaoreview"
+    "ultrafast"
    ],
    "relatedNote": "Grok Bot 三篇互推：小莫那篇讲从 0 到 1 的开通、模板与记忆清理全流程，lauren @poteto 那篇讲自动化方法论，本篇讲把微信记录送进 Grok Bot 的工具。",
    "rev": "758746f74e74"
@@ -1290,9 +1705,9 @@
    "stats": "35 回复 / 2 转帖 / 70 点赞 / 11 书签 / 7,603 次观看",
    "sourceNote": "来源：X · 诺诺 @shenghouxuyao，2026-11-06（35 回复 / 2 转帖 / 70 点赞 / 11 书签 / 7,603 次观看）。本页按原文七节结构化整理，保留全部后台数据口径、分工与三个提醒，观点归原作者。",
    "related": [
-    "shortpost",
-    "ec2000s",
-    "heygen6"
+    "blgvideo",
+    "fableaudio",
+    "redline"
    ],
    "relatedNote": null,
    "rev": "1c5a37fb12d8"
@@ -1325,9 +1740,9 @@
    "stats": "854 回复 / 6,475 转帖 / 36,915 点赞 / 75,762 书签 / 约 564 万观看",
    "sourceNote": "来源：X · Eian @EianLu，2026-11-05（854 回复 / 6,475 转帖 / 36,915 点赞 / 75,762 书签 / 约 564 万观看）。本页按原文两大部分完整整理，保留工具分工、五点故事标准、分镜六要点、首尾帧绘制顺序、错误对照表要点与四线程模式，提示词以要点形式呈现，观点归原作者。",
    "related": [
-    "shortpost",
-    "ec2000s",
-    "heygen6"
+    "blgvideo",
+    "fableaudio",
+    "redline"
    ],
    "relatedNote": null,
    "rev": "9afc5fa32a0a"
@@ -1430,7 +1845,7 @@
    "related": [
     "whyitearns",
     "posthogui",
-    "xhs"
+    "firstorder"
    ],
    "relatedNote": "姊妹篇：同作者虹安的 WhyItEarns 篇拆别人赚钱的产品，本篇是他自己 18 天做 10 个出海站的实录；另附 PostHog 的 UI 发布复盘，同属复盘 / 踩坑类。",
    "rev": "02bdc089717c"
@@ -1496,9 +1911,9 @@
    "stats": null,
    "sourceNote": "来源：简盒 JianHeBox（页面未署个人作者名，仅标注作者团队），2026-11-02，页面标注约 12 分钟读完，数据核验时间为 2026 年 11 月 2 日，价格与额度以各平台官网公示为准。本页按原文结构化整理，保留速查表、成本公式与 FAQ，观点归原作者。",
    "related": [
-    "shortpost",
-    "ec2000s",
-    "heygen6"
+    "blgvideo",
+    "fableaudio",
+    "redline"
    ],
    "relatedNote": null,
    "rev": "3cd0e9fc733d"
@@ -1533,7 +1948,7 @@
    "related": [
     "xianyu",
     "seedance",
-    "shaoreview"
+    "ultrafast"
    ],
    "relatedNote": "互推：闲鱼黑话篇把 Claude 账号在闲鱼上的暗语（A社、克劳德、kyc/3HK 纯净防封账号）列进了速查表，本篇讲这些账号背后的封号风控与斩杀线；另附 G哥的 Seedance 教程，同属 Claude / Codex 实操。",
    "rev": "f0623b51ada0"
@@ -1571,7 +1986,7 @@
    "related": [
     "cg",
     "grokbot",
-    "shaoreview"
+    "ultrafast"
    ],
    "relatedNote": "Grok Bot 三篇互推：铁柱 AGI 那篇讲把微信记录送进 Grok Bot 的工具（Grok Bot Anywhere），lauren @poteto 那篇讲用 Grok Bot 做自动化的通用方法论，本篇讲从 0 到 1 的开通、接 X、模板与记忆清理全流程。",
    "rev": "aeb2897439d0"
@@ -1602,7 +2017,7 @@
    "related": [
     "hf",
     "dshcreator",
-    "shaoreview"
+    "firstorder"
    ],
    "relatedNote": null,
    "rev": "8607227bae99"
@@ -1636,8 +2051,8 @@
    "sourceNote": "来源：X · star_flow_ai @star_flow_ai（星川 StarFlow，自述为正在折腾 AI 的程序员），2026-09-20（681 点赞 / 59 转帖 / 约 33.5 万浏览）。发现路径：每日监控轮换扫到 @star_flow_ai，2026-11-19 收录。本页为结构化中文转述，保留双层语义模型、9 月进化史、十大分类的精选词条、破译插件功能与钓鱼识别法则，完整 200+ 词条见原文，观点归原作者。",
    "related": [
     "claudeban",
-    "posthogui",
-    "whyitearns"
+    "firstorder",
+    "anthropic7"
    ],
    "relatedNote": "互推：Claude 封号篇讲这些账号为什么会被封、斩杀线在哪——本篇速查表里正收了 Claude 账号的暗语（A社、克劳德、kyc/3HK）。",
    "rev": "261c8d04c19e"
@@ -1667,9 +2082,9 @@
    "stats": "381 赞同 / 266 收藏",
    "sourceNote": "来源：知乎 · 望周知 对问题《互联网大厂开始后悔搞AI了吗？》的回答，2026-08-19（381 赞同 / 266 收藏）。本页按原文论证顺序完整整理，延伸讨论一节为本页梳理并已注明，观点归原作者。",
    "related": [
-    "posthogui",
-    "whyitearns",
-    "xhs"
+    "firstorder",
+    "anthropic7",
+    "marketing27"
    ],
    "relatedNote": null,
    "rev": "57b79f7da278"
@@ -1705,7 +2120,7 @@
    "related": [
     "codex101",
     "lemomo",
-    "shaoreview"
+    "ultrafast"
    ],
    "relatedNote": "互推：Codex 新手向与本篇同为 Sukiea1008 的 AI 效率方法论；Lemomo 的 lemo-animi 同属 Skill / Agent 工作流主题。",
    "rev": "5502b57f49cf"
@@ -1739,7 +2154,7 @@
    "related": [
     "lemomo",
     "naval",
-    "shaoreview"
+    "ultrafast"
    ],
    "relatedNote": "互推：Lemomo 的 lemo-animi 是 Codex / Claude Code 里 Skill 的实战案例；《纳瓦尔宝典》学习系统与本篇同为 Sukiea1008 的 AI 效率方法论。",
    "rev": "483a78a6455c"
@@ -1771,9 +2186,9 @@
    "stats": "164 点赞 / 26 转帖 / 约 6.1 万浏览",
    "sourceNote": "来源：X · Sukiea1008 @Sukiea1008，2026-07-31（164 点赞 / 26 转帖 / 约 6.1 万浏览）。发现路径：每日监控轮换扫到 @Sukiea1008，2026-11-19 收录。本页为结构化中文转述，保留双向链接机制、一级目录与 Index/Rules 入口、Properties 字段取舍、旧笔记整理法与同步备份之分，观点归原作者。",
    "related": [
-    "shaoreview",
-    "shaobitter",
-    "wlzh"
+    "ultrafast",
+    "healthsys",
+    "ultra"
    ],
    "relatedNote": null,
    "rev": "3583c00b3f77"
@@ -1808,9 +2223,9 @@
    "stats": "81 点赞 / 13 转帖 / 约 3.5 万浏览",
    "sourceNote": "来源：X · Sukiea1008 @Sukiea1008，2026-07-18（81 点赞 / 13 转帖 / 约 3.5 万浏览）。发现路径：每日监控轮换扫到 @Sukiea1008，2026-11-19 收录。本页为结构化中文转述，保留最小闭环路径、公开仓库的注意事项、域名与备案的判断标准及 Cloudflare 的定位，观点归原作者。",
    "related": [
-    "shaoreview",
-    "shaobitter",
-    "wlzh"
+    "ultrafast",
+    "healthsys",
+    "ultra"
    ],
    "relatedNote": null,
    "rev": "747eae5a9a3f"
@@ -1844,9 +2259,9 @@
    "stats": null,
    "sourceNote": "来源：36氪 · 36氪AI测评，2026-07-08 11:03。本页按原文结构化整理，保留六款工具的全部优劣判断与适配场景，观点归原作者。",
    "related": [
-    "shortpost",
-    "ec2000s",
-    "heygen6"
+    "blgvideo",
+    "fableaudio",
+    "redline"
    ],
    "relatedNote": null,
    "rev": "74912206e173"
