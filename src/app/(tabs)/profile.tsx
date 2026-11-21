@@ -67,7 +67,7 @@ export default function ProfileScreen() {
   };
 
   const FEEDBACK_EMAIL = 'a2897378856@gmail.com';
-  const version = Constants.expoConfig?.version ?? '2.1.3';
+  const version = Constants.expoConfig?.version ?? '2.1.4';
 
   const onFeedback = async () => {
     const subject = encodeURIComponent('Collect 反馈');

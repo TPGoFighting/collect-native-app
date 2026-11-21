@@ -11,7 +11,7 @@ import { UpdateBanner } from '@/components/UpdateBanner';
 export default function AboutScreen() {
   const { theme, isDark } = useSettings();
   const router = useRouter();
-  const version = Constants.expoConfig?.version ?? '2.1.3';
+  const version = Constants.expoConfig?.version ?? '2.1.4';
   const logo = isDark
     ? require('@/assets/logo-white-1024.png')
     : require('@/assets/logo-black-1024.png');
